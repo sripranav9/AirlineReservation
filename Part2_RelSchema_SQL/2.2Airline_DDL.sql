@@ -14,6 +14,8 @@ create table airline_staff
 	 foreign key (airline_name) references airline(airline_name)
 	);
 
+	
+
 create table staff_email
 	(username 		varchar(100),
 	 email_id  varchar(100),
