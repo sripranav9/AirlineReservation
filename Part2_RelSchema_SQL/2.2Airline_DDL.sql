@@ -3,6 +3,8 @@ create table airline
 	 primary key (airline_name)
 	);
 
+	
+
 create table airline_staff
 	(airline_name	varchar(100), 
 	 username 		varchar(100),
