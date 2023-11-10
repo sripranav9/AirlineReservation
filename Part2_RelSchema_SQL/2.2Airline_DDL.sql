@@ -14,16 +14,12 @@ create table airline_staff
 	 foreign key (airline_name) references airline(airline_name)
 	);
 
-	
-
 create table staff_email
 	(username 		varchar(100),
 	 email_id  varchar(100),
 	 primary key (username, email_id),
 	 foreign key (username) references airline_staff(username)
 	);
-
-	
 
 create table staff_phone
 	(username 		varchar(100),
