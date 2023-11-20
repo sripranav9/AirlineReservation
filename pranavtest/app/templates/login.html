@@ -2,10 +2,10 @@
 <head>
 </head>
 <body>
-<form action="/registerAuth" method="POST">
+<form action="/loginAuth" method="POST">
 	<input type="text" name = "username" placeholder="username" required/> </br>
 	<input type="password" name = "password" placeholder="password" required/></br>
-	<input type="submit" value = Register />
+	<input type="submit" value = Login />
 	{% if error %}
 		<p class="error"><strong>Error:</strong> {{error}}</p>
 	{% endif %}

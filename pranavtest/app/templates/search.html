@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flight Results</title>
+    <style type="text/css">
+        table, th, td {
+            border: 0.5px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h1>Flight Results</h1>
+    <table>
+        <tr>
+			<th>Airline</th>
+            <th>Flight Number</th>
+            <th>Origin</th>
+            <th>Destination</th>
+            <th>Departure Date</th>
+			<th>Price</th>
+            <!-- Add more table headers as needed based on your flight data -->
+        </tr>
+        {% for flight in flights %}
+        <tr>
+			<td>{{ flight['airline_name'] }}</td>
+            <td>{{ flight['flight_num'] }}</td>
+            <td>{{ flight['departure_airport'] }}</td>
+            <td>{{ flight['arrival_airport'] }}</td>
+            <td>{{ flight['departure_date'] }}</td>
+			<td>{{ flight['base_price_ticket'] }}</td>
+            <!-- Add more data fields as needed -->
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
