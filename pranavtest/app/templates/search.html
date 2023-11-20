@@ -7,6 +7,7 @@
             border: 0.5px solid black;
         }
     </style>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <a href="/">Back</a>
@@ -20,6 +21,7 @@
             <th>Origin</th>
             <th>Destination</th>
             <th>Departure Date</th>
+            <th>Departure Time</th>
             <th>Price</th>
 
         </tr>
@@ -30,6 +32,7 @@
             <td>{{ flight['departure_airport'] }}</td>
             <td>{{ flight['arrival_airport'] }}</td>
             <td>{{ flight['departure_date'] }}</td>
+            <td>{{ flight['departure_time'] }}</td>
             <td>{{ flight['base_price_ticket'] }}</td>
             <td><a href="">Select</a></td>
         </tr>
@@ -48,6 +51,7 @@
             <th>Origin</th>
             <th>Destination</th>
             <th>Departure Date</th>
+            <th>Departure Time</th>
             <th>Price</th>
         </tr>
         {% for flight in inbound_flights %}
@@ -57,6 +61,7 @@
             <td>{{ flight['departure_airport'] }}</td>
             <td>{{ flight['arrival_airport'] }}</td>
             <td>{{ flight['departure_date'] }}</td>
+            <td>{{ flight['departure_time'] }}</td>
             <td>{{ flight['base_price_ticket'] }}</td>
             <td><a href="">Select</a></td>
         </tr>
