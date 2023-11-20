@@ -9,28 +9,60 @@
     </style>
 </head>
 <body>
+    <a href="/">Back</a>
     <h1>Flight Results</h1>
+    <br>
+    <h2>Outbound flights</h2>
     <table>
         <tr>
-			<th>Airline</th>
+            <th>Airline</th>
             <th>Flight Number</th>
             <th>Origin</th>
             <th>Destination</th>
             <th>Departure Date</th>
-			<th>Price</th>
-            <!-- Add more table headers as needed based on your flight data -->
+            <th>Price</th>
+
         </tr>
-        {% for flight in flights %}
+        {% for flight in outbound_flights %}
         <tr>
-			<td>{{ flight['airline_name'] }}</td>
+            <td>{{ flight['airline_name'] }}</td>
             <td>{{ flight['flight_num'] }}</td>
             <td>{{ flight['departure_airport'] }}</td>
             <td>{{ flight['arrival_airport'] }}</td>
             <td>{{ flight['departure_date'] }}</td>
-			<td>{{ flight['base_price_ticket'] }}</td>
-            <!-- Add more data fields as needed -->
+            <td>{{ flight['base_price_ticket'] }}</td>
+            <td><a href="">Select</a></td>
         </tr>
         {% endfor %}
     </table>
+
+    <br>
+    <hr>
+
+    {% if inbound_flights %} <!-- Check if there are inbound flights to display -->
+    <h2>Inbound flights</h2>
+    <table>
+        <tr>
+            <th>Airline</th>
+            <th>Flight Number</th>
+            <th>Origin</th>
+            <th>Destination</th>
+            <th>Departure Date</th>
+            <th>Price</th>
+        </tr>
+        {% for flight in inbound_flights %}
+        <tr>
+            <td>{{ flight['airline_name'] }}</td>
+            <td>{{ flight['flight_num'] }}</td>
+            <td>{{ flight['departure_airport'] }}</td>
+            <td>{{ flight['arrival_airport'] }}</td>
+            <td>{{ flight['departure_date'] }}</td>
+            <td>{{ flight['base_price_ticket'] }}</td>
+            <td><a href="">Select</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
 </body>
 </html>

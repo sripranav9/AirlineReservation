@@ -25,6 +25,9 @@ def search_flights():
         origin_code = request.form['origin']
         destination_code = request.form['destination']
         departure_date = request.form['departure_date']
+        trip_type = request.form.get('trip') # Get the trip type (one-way or round-trip)
+        return_date = request.form.get('return_date') if 'return_date' in request.form else None
+
 
         # SQL Query the database
         cursor = conn.cursor()
@@ -32,11 +35,21 @@ def search_flights():
             'SELECT * FROM flight WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s',
             (origin_code, destination_code, departure_date)
         )
-        flights = cursor.fetchall()
+        outbound_flights = cursor.fetchall()
+
+        #Initialise an empty list for inbound flights
+        # If round-trip, query the database for inbound flights
+        if trip_type == 'round-trip' and return_date:
+            cursor.execute(
+                'SELECT * FROM flight WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s',
+                (destination_code, origin_code, return_date)
+            )
+        inbound_flights = cursor.fetchall()
+
         cursor.close()
 
         # Render the results in a HTML table
-        return render_template('search.html', flights=flights)
+        return render_template('search.html', outbound_flights=outbound_flights, inbound_flights=inbound_flights, trip_type=trip_type)
     
     # If method is GET, just render the search form
     return render_template('index.html')
