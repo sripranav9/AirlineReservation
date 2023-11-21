@@ -95,7 +95,12 @@ def registerStaff():
 		conn.commit()
 		cursor.close()
 		return redirect(url_for('customer_home'))
-	
+
+##################################################
+
+
+##################################################
+#LOGIN
 
 @app.route('/login_airline_staff')
 def login_airline_staff():
@@ -103,31 +108,32 @@ def login_airline_staff():
 
 @app.route('/loginAuth', methods=['GET', 'POST'])
 def loginStaff():
+
 	#grabs information from the forms
 	username = request.form['username']
 	password = hashlib.md5(request.form['password'].encode()).hexdigest()
 
-
-	#cursor used to send queries
+	#queries database to see if such tuple exists
 	cursor = conn.cursor()
-	#executes query
 	query = 'SELECT * FROM airline_staff WHERE username = %s and pwd = %s'
 	cursor.execute(query, (username, password))
-	#stores the results in a variable
 	data = cursor.fetchone()
 	cursor.close()
+
+
 	error = None
+
 	if(data):
-		#creates a session for the the user
-		#session is a built in
+		#if tuple exists create a session for the the user and login
 		session['username'] = username
 		session['password'] = password
 		return redirect(url_for('customer_home'))
 	else:
-		#returns an error message to the html page
+		#if tuple doesn't exist then throw error message
 		error = 'Invalid login or username'
 		return render_template('login_airline_staff.html', error=error)
 
+##################################################
 
 @app.route('/customer_home')
 def customer_home():
