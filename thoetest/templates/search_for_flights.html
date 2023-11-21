@@ -1,0 +1,119 @@
+<html>
+<head>
+</head>
+<body>
+
+	<form action="/searchForFlights" method="POST">
+		<h1>Serach for flights</h1>
+		<input type="text" name = "src_airport" placeholder="Origin" required/> </br>
+		<input type="text" name = "dst_airport" placeholder="Destination" required/> </br>
+		<input type="radio" name= "trip_type" value="round_trip" checked onclick="showAdditionalInfo()"> Round Trip 
+		<input type="radio" name= "trip_type" value="one_way" onclick="showAdditionalInfo()"> One-Way</br>
+		<label>Departure Date: </label>
+		<input type="date" name = "departure_date" placeholder="Departure Date" required/> </br>
+   		<div id = "returnDateContainer">
+   			<label> Return Date: </label>
+   			<input type="date" name = "return_date" placeholder="Return Date" /> </br>
+   		</div>
+		<input type="submit" value = Search />
+	</form>
+
+
+<style type="text/css">
+	table, th, td{
+		border: 1px solid black;
+	}
+</style>
+
+
+<div>
+	<h1>Outgoing Flights</h1>
+	<table>
+		<th>Airline Name</th>
+		<th>Departure Aiport</th>
+		<th>Arrival Airport</th>
+		<th>Flight Number</th>
+		<th>Departure Date</th>
+		<th>Departure Time</th>
+		<th>Arrival Date</th>
+		<th>Arrival Time</th>
+		<th>Base Price Ticket</th>
+		<th>Flight Status</th>
+		<th>Select Flight</th>
+	{% for line in outBoundFlights %}
+		<tr>
+			<td>{{line['airline_name']}}</td>
+			<td>{{line['departure_airport']}}</td>
+			<td>{{line['arrival_airport']}}</td>
+			<td>{{line['flight_num']}}</td>
+			<td>{{line['departure_date']}}</td>
+			<td>{{line['departure_time']}}</td>
+			<td>{{line['arrival_date']}}</td>
+			<td>{{line['arrival_time']}}</td>
+			<td>{{line['base_price_ticket']}}</td>
+			<td>{{line['flight_status']}}</td>
+			<td>
+				<form>
+					<input type="radio" name= "departure_flight" value = "option1"></br>
+				</form>
+			</td>
+
+		</tr>
+	{% endfor %}
+	</table>
+</div>
+
+{% if trip_type != "one_way" %}
+<div id = "returnDateContainer2">
+	<hr>
+	<h1>Returning Flights</h1>
+	<table>
+		<th>Airline Name</th>
+		<th>Departure Aiport</th>
+		<th>Arrival Airport</th>
+		<th>Flight Number</th>
+		<th>Departure Date</th>
+		<th>Departure Time</th>
+		<th>Arrival Date</th>
+		<th>Arrival Time</th>
+		<th>Base Price Ticket</th>
+		<th>Flight Status</th>
+		<th>Select Flight</th>
+
+	{% for line in returnBoundFlights %}
+		<tr>
+			<td>{{line['airline_name']}}</td>
+			<td>{{line['departure_airport']}}</td>
+			<td>{{line['arrival_airport']}}</td>
+			<td>{{line['flight_num']}}</td>
+			<td>{{line['departure_date']}}</td>
+			<td>{{line['departure_time']}}</td>
+			<td>{{line['arrival_date']}}</td>
+			<td>{{line['arrival_time']}}</td>
+			<td>{{line['base_price_ticket']}}</td>
+			<td>{{line['flight_status']}}</td>
+			<td>
+				<form>
+					<input type="radio" name= "departure_flight" value = "option1"></br>
+				</form>
+			</td>
+
+		</tr>
+	{% endfor %}
+	</table>
+</div>
+{% endif %}
+
+	<script>
+		function showAdditionalInfo() {
+			var returnDateContainer = document.getElementById("returnDateContainer");
+            var roundTripRadio = document.querySelector('input[name="trip_type"][value="round_trip"]');
+
+            returnDateContainer.style.display = roundTripRadio.checked ? "block" : "none";
+            returnDateContainer2.style.display = roundTripRadio.checked ? "block" : "none";
+		}
+	</script>
+
+</body>
+
+</html>
