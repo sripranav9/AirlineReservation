@@ -2,7 +2,7 @@
 <head>
 </head>
 <body>
-
+	<a href="/">Go back</a> </br>
 	<form action="/searchForFlights" method="POST">
 		<h1>Serach for flights</h1>
 		<input type="text" name = "src_airport" placeholder="Origin" required/> </br>
@@ -37,7 +37,7 @@
 		<th>Departure Time</th>
 		<th>Arrival Date</th>
 		<th>Arrival Time</th>
-		<th>Base Price Ticket</th>
+		<th>Ticket Price</th>
 		<th>Flight Status</th>
 		<th>Select Flight</th>
 	{% for line in outBoundFlights %}
@@ -76,7 +76,7 @@
 		<th>Departure Time</th>
 		<th>Arrival Date</th>
 		<th>Arrival Time</th>
-		<th>Base Price Ticket</th>
+		<th>Ticket Price</th>
 		<th>Flight Status</th>
 		<th>Select Flight</th>
 

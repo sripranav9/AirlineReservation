@@ -2,6 +2,7 @@
 from flask import Flask, render_template, request, session, url_for, redirect
 import pymysql.cursors
 import hashlib
+import json
 
 #Initialize the app from Flask
 app = Flask(__name__)
@@ -16,7 +17,7 @@ conn = pymysql.connect(host='localhost',
 
 #Define a route to hello function
 @app.route('/')
-def hello():
+def home():
 	return render_template('index.html')
 
 
@@ -127,6 +128,8 @@ def loginStaff():
 		#if tuple exists create a session for the the user and login
 		session['username'] = username
 		session['password'] = password
+		session['airline'] = data['airline_name']
+		session['first_name'] = data['first_name']
 		return redirect(url_for('staff_home'))
 	else:
 		#if tuple doesn't exist then throw error message
@@ -155,12 +158,88 @@ def isNotValidStaff():
 def staff_home():
 	if(isNotValidStaff()):
 		return redirect(url_for('login_airline_staff'))
-	return render_template('staff_home.html', username = session['username'])
+	return render_template('staff_home.html', username = session['first_name'])
 
 @app.route('/logout')
 def logout():
 	session.clear()
-	return redirect(url_for('hello'))
+	return redirect(url_for('home'))
+
+@app.route('/view_flights')
+def view_flights():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+
+	cursor = conn.cursor()
+	thirty_day_query = 'SELECT * FROM flight WHERE airline_name = %s and CURRENT_DATE <= departure_date and departure_date <= DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY)'
+	cursor.execute(thirty_day_query, (session['airline']))
+	thirty_day_flights = cursor.fetchall()
+	cursor.close()
+	return render_template('view_flights.html', outBoundFlights = thirty_day_flights)
+
+
+@app.route('/change_status', methods=['GET'])
+def change_status():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+
+	cursor = conn.cursor()
+	flight_query = 'SELECT * FROM flight WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s'
+	cursor.execute(flight_query, (request.args.get('param2'), request.args.get('param1'), request.args.get('param3'), request.args.get('param4')))
+	flight = cursor.fetchone()
+	cursor.close()
+
+
+	return render_template('change_status.html', flight = flight)
+
+
+@app.route('/changeStatus', methods=['GET','POST'])
+def changeStatus():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+
+	selected_status = request.form['status']
+	cursor = conn.cursor()
+
+	flight_change_query = 'UPDATE flight set flight_status = %s where airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s'
+	flight_query = 'SELECT * FROM flight WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s'
+
+	airline_name = request.form.get('airline_name')
+	flight_num = request.form.get('flight_num')
+	departure_date = request.form.get('departure_date')
+	departure_time = request.form.get('departure_time')
+
+	cursor.execute(flight_change_query, (selected_status, airline_name, flight_num, departure_date, departure_time))
+	cursor.execute(flight_query, (airline_name, flight_num, departure_date, departure_time))
+	flight = cursor.fetchone()
+	conn.commit()
+	cursor.close()
+
+	return render_template('change_status.html', flight = flight)
+
+@app.route('/see_customers', methods=['GET'])
+def see_customers():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+	
+	airline_name = request.args.get('param2')
+	flight_num = request.args.get('param1')
+	departure_date = request.args.get('param3')
+	departure_time = request.args.get('param4')
+
+	cursor = conn.cursor()
+	flight_query = 'SELECT * FROM flight WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s'
+	cursor.execute(flight_query, (airline_name, flight_num, departure_date, departure_time))
+	flight = cursor.fetchone()
+
+	customer_query = 'SELECT * FROM purchase where ticketID in (SELECT ticketID from ticket where airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s)'
+	cursor.execute(customer_query, (airline_name, flight_num, departure_date, departure_time))
+	customers = cursor.fetchall()
+
+	cursor.close()
+	return render_template('see_customers.html', flight = flight, customers = customers)
+
+
 ##################################################
 
 
