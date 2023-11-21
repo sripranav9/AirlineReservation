@@ -24,7 +24,7 @@ def hello():
 #Airline Staff
 
 ##################################################
-#Register
+#REGISTER
 @app.route('/register_airline_staff')
 def register_airline_staff():
 	return render_template('register_airline_staff.html')
