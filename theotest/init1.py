@@ -94,7 +94,7 @@ def registerStaff():
 		
 		conn.commit()
 		cursor.close()
-		return redirect(url_for('customer_home'))
+		return redirect(url_for('staff_home'))
 
 ##################################################
 
@@ -127,7 +127,7 @@ def loginStaff():
 		#if tuple exists create a session for the the user and login
 		session['username'] = username
 		session['password'] = password
-		return redirect(url_for('customer_home'))
+		return redirect(url_for('staff_home'))
 	else:
 		#if tuple doesn't exist then throw error message
 		error = 'Invalid login or username'
@@ -135,10 +135,32 @@ def loginStaff():
 
 ##################################################
 
-@app.route('/customer_home')
-def customer_home():
-	return render_template('customer_home.html', username = session['username'])
+#If the staff exists then returns false if Staff does not exist return True or if Session is not open return True
+def isNotValidStaff():
+	if(len(session) == 0): return True
+	if(session['username'] is None): return True
+	if(session['password'] is None): return True
+	username = session['username']
+	password = session['password']
+	cursor = conn.cursor()
+	query = 'SELECT * FROM airline_staff WHERE username = %s and pwd = %s'
+	cursor.execute(query, (username, password))
+	data = cursor.fetchone()
+	cursor.close()
+	if(data is None): return True
+	return False
 
+
+@app.route('/staff_home')
+def staff_home():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+	return render_template('staff_home.html', username = session['username'])
+
+@app.route('/logout')
+def logout():
+	session.clear()
+	return redirect(url_for('hello'))
 ##################################################
 
 
@@ -233,104 +255,6 @@ def searchForFlights():
 
 
 
-
-
-
-#Define route for login
-@app.route('/login')
-def login():
-	return render_template('login.html')
-
-#Define route for register
-@app.route('/register')
-def register():
-	return render_template('register.html')
-
-
-
-#Authenticates the login
-@app.route('/loginAuth', methods=['GET', 'POST'])
-def loginAuth():
-	#grabs information from the forms
-	username = request.form['username']
-	password = request.form['password']
-
-	#cursor used to send queries
-	cursor = conn.cursor()
-	#executes query
-	query = 'SELECT * FROM user WHERE username = %s and password = %s'
-	cursor.execute(query, (username, password))
-	#stores the results in a variable
-	data = cursor.fetchone()
-	#use fetchall() if you are expecting more than 1 data row
-	cursor.close()
-	error = None
-	if(data):
-		#creates a session for the the user
-		#session is a built in
-		session['username'] = username
-		return redirect(url_for('home'))
-	else:
-		#returns an error message to the html page
-		error = 'Invalid login or username'
-		return render_template('login.html', error=error)
-
-#Authenticates the register
-@app.route('/registerAuth', methods=['GET', 'POST'])
-def registerAuth():
-	#grabs information from the forms
-	username = request.form['username']
-	password = request.form['password']
-
-	#cursor used to send queries
-	cursor = conn.cursor()
-	#executes query
-	query = 'SELECT * FROM user WHERE username = %s'
-	cursor.execute(query, (username))
-	#stores the results in a variable
-	data = cursor.fetchone()
-	#use fetchall() if you are expecting more than 1 data row
-	error = None
-	if(data):
-		#If the previous query returns data, then user exists
-		error = "This user already exists"
-		return render_template('register.html', error = error)
-	else:
-		ins = 'INSERT INTO user VALUES(%s, %s)'
-		cursor.execute(ins, (username, password))
-		conn.commit()
-		cursor.close()
-		return render_template('index.html')
-
-@app.route('/home')
-def home():
-    
-    username = session['username']
-    cursor = conn.cursor();
-    query = 'SELECT ts, blog_post FROM blog WHERE username = %s ORDER BY ts DESC'
-    cursor.execute(query, (username))
-    data1 = cursor.fetchall() 
-    for each in data1:
-        print(each['blog_post'])
-    cursor.close()
-    return render_template('home.html', username=username, posts=data1)
-
-		
-@app.route('/post', methods=['GET', 'POST'])
-def post():
-	username = session['username']
-	cursor = conn.cursor();
-	blog = request.form['blog']
-	query = 'INSERT INTO blog (blog_post, username) VALUES(%s, %s)'
-	cursor.execute(query, (blog, username))
-	conn.commit()
-	cursor.close()
-	return redirect(url_for('home'))
-
-@app.route('/logout')
-def logout():
-	session.pop('username')
-	return redirect('/')
 		
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000
