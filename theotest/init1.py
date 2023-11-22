@@ -73,6 +73,7 @@ def registerStaff():
 		insert_phone_query = 'INSERT INTO staff_phone VALUES(%s, %s)'
 		phone_already_query = 'SELECT * from staff_phone where username = %s and phone_num = %s'
 		for phone in phone_numbers:
+			if(phone == ''): continue
 			cursor.execute(phone_already_query, (username, phone))
 			phoneExists = cursor.fetchone();
 			if(phoneExists is None):
@@ -84,6 +85,7 @@ def registerStaff():
 		insert_email_query = 'INSERT INTO staff_email VALUES(%s, %s)'
 		email_already_query = 'SELECT * from staff_email where username = %s and email_id = %s'
 		for email in emails:
+			if(email == ''): continue
 			cursor.execute(email_already_query, (username, email))
 			emailExists = cursor.fetchone();
 			if(emailExists is None):
@@ -92,6 +94,8 @@ def registerStaff():
 		#if they register they automatically are logged in
 		session['username'] = username
 		session['password'] = password
+		session['first_name'] = first_name
+		session['airline'] = airline_name
 		
 		conn.commit()
 		cursor.close()
@@ -238,6 +242,65 @@ def see_customers():
 
 	cursor.close()
 	return render_template('see_customers.html', flight = flight, customers = customers)
+
+
+@app.route('/create_new_flight', methods=['GET', 'POST'])
+def create_new_flight():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+	return render_template('create_new_flight.html')
+
+@app.route('/createNewFlight', methods=['GET','POST'])
+def createNewFlight():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+
+	cursor = conn.cursor();
+	#get query to see whether airline exists
+	airline_name = request.form['airline_name']
+	airline_query = 'SELECT * FROM airline where airline_name = %s'
+	cursor.execute(airline_query, (airline_name))
+	airlineExists = cursor.fetchone()
+
+	#get query to see whether arrival airport exists
+	arrival_airport = request.form['arrival_airport']
+	arrival_aiport_query = 'SELECT * FROM airport where code = %s'
+	cursor.execute(arrival_aiport_query, (arrival_airport))
+	arrivalAirportExists = cursor.fetchone()
+
+	#get query to see whether departure airport exists
+	departure_airport = request.form['departure_airport']
+	departure_aiport_query = 'SELECT * FROM airport where code = %s'
+	cursor.execute(departure_aiport_query, (departure_airport))
+	departureAirportExists = cursor.fetchone()
+
+	#get query to see whether Airplane exists
+	assigned_airplane_airline = request.form['assigned_airplane_airline']
+	airplane_ID = request.form['assigned_airplaneID']
+	assigned_airplane_airline_query = 'SELECT * FROM airplane where airline_name = %s and airplaneID = %s'
+	cursor.execute(assigned_airplane_airline_query, (assigned_airplane_airline, airplane_ID))
+	assignedAirplane = cursor.fetchone()
+
+	cursor.close()
+
+	if(airlineExists is None):
+		error = "This Airline Does not exist"
+		return render_template('create_new_flight.html', error = error)
+
+	if(arrivalAirportExists is None):
+		error = "This Arrival Airport Does not Exist"
+		return render_template('create_new_flight.html', error = error)
+
+	if(departureAirportExists is None):
+		error = "This Departure Aiport Does not Exist"
+		return render_template('create_new_flight.html', error = error)
+
+	if(assignedAirplane is None):
+		error = "This Airplane does not exist"
+		return render_template('create_new_flight.html', error = error)
+
+
+
 
 
 ##################################################
