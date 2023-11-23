@@ -29,7 +29,7 @@ def customerlogin():
 #Define route for customer register
 @app.route('/customer-register')
 def customerregister():
-	return render_template('customer-login.html')
+	return render_template('customer-register.html')
 
 @app.route('/search')
 def search():
