@@ -13,10 +13,23 @@ conn = pymysql.connect(host='localhost',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
-#Define a route to hello function
+####################################################################
+# HOME - New Customer / Not logged in
+
+#Define a route for the index - home
 @app.route('/')
-def hello():
+def home():
 	return render_template('index.html')
+
+#Define route for customer login
+@app.route('/customer-login')
+def customerlogin():
+	return render_template('customer-login.html')
+
+#Define route for customer register
+@app.route('/customer-register')
+def customerregister():
+	return render_template('customer-login.html')
 
 @app.route('/search')
 def search():
@@ -57,6 +70,11 @@ def search_flights():
     
     # If method is GET, just render the search form
     return render_template('search.html')
+####################################################################
+
+####################################################################
+# CUSTOMER
+
 
 		
 app.secret_key = 'some key that you will never guess'
