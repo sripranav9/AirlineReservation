@@ -27,7 +27,7 @@ def home():
 def customerlogin():
 	return render_template('customer-login.html')
 
-#Customer loginAuth and registerAuth can be found in the CUSTOMER section below the "HOME - New Customer / Not logged in" section
+#Customer loginAuth and registerAuth, other related functions can be found in the CUSTOMER section below the "HOME - New Customer / Not logged in" section
 
 #Define route for customer register
 @app.route('/customer-register')
@@ -136,8 +136,61 @@ def registerAuth():
             # Show an error message
             return render_template('customer-register.html', error="An error occurred during registration.")
 
+@app.route('/loginAuth', methods=['GET', 'POST'])
+def LoginAuth():
+    #fetch login information from the form
+    email = request.form['email']
+    password = hashlib.md5(request.form['password'].encode()).hexdigest()
+        
+    #queries database to see if such tuple exists
+    cursor = conn.cursor()
+    query = 'SELECT * FROM customer WHERE email_id = %s and pwd = %s'
+    cursor.execute(query, (email, password))
+    data = cursor.fetchone()
+    cursor.close()
+        
+    error = None
+    if(data):
+        #if tuple exists create a session for the the user and login
+        session['email'] = email
+        session['password'] = password
+        session['fname'] = data['first_name']
+        session['lname'] = data['last_name']
+        return redirect(url_for('customerHome'))
+    else:
+        #if tuple doesn't exist then throw error message
+        error = 'Invalid login or username'
+        return render_template('customer-login.html', error=error)
+
+def isNotValidCusomter():
+	if(len(session) == 0): return True #no pair in session dictionary, so no session
+	if(session['email'] is None): return True 
+	if(session['password'] is None): return True
+	email = session['email']
+	password = session['password']
+	cursor = conn.cursor()
+	query = 'SELECT * FROM customer WHERE email_id = %s and pwd = %s'
+	cursor.execute(query, (email, password))
+	data = cursor.fetchone()
+	cursor.close()
+	if(data is None): return True
+	return False
+
+@app.route('/customerHome', methods=['GET','POST'])
+def customerHome():
+        if(isNotValidCusomter()):
+            return redirect(url_for('customerlogin'))
+        else:
+            #session active - so pass the fname and other variables as necessary
+            return render_template('customer-home.html', fname = session['fname'])
+
+@app.route('/customer-logout')
+def logout():
+    session.clear()
+    return redirect(url_for('customerlogin'))
 		
 app.secret_key = 'some key that you will never guess'
+# app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
 #Run the app on localhost port 5000
 #debug = True -> you don't have to restart flask
 #for changes to go through, TURN OFF FOR PRODUCTION
