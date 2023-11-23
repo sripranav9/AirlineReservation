@@ -127,7 +127,7 @@ def registerAuth():
             conn.commit()
             cursor.close()
             # Redirect to login page after registration
-            return redirect(url_for('customer-login'))
+            return redirect(url_for('customerlogin'))
         except Exception as e:
             print(e)
             # Handle errors and rollback transaction
