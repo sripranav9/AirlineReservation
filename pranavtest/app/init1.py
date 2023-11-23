@@ -80,18 +80,18 @@ def search_flights():
 
 @app.route('/registerAuth', methods=['GET', 'POST'])
 def registerAuth():
-
-    #get query to see whether the email already exists in the customer table
     customer_email = request.form['emailid']
     cursor = conn.cursor()
-    query = 'SELECT * FROM customer WHERE email = %s'
+
+    # Check if email already exists
+    query = 'SELECT * FROM customer WHERE email_id = %s'
     cursor.execute(query, (customer_email))
     emailExists = cursor.fetchone()
 
     error = None #declaring a variable maybe?
     if (emailExists): 
         #the emailExists variable has data - same email found in the database
-        error = "This user already exists in the database. Try Logging in"
+        return render_template('customer-register.html', error = "This user already exists in the database. Try Logging in")
         
     else:
         #good to be added
@@ -104,12 +104,37 @@ def registerAuth():
         apt_num = request.form['apt-num']
         city = request.form['city']
         state = request.form['state']
-        zip = request.form['zip-code']
+        zip_code = request.form['zip-code']
         passport_num = request.form['passport-number']
         passport_country = request.form['passport-country']
         passport_expiry = request.form['passport-expiry']
-
-    return redirect(url_for('customer-login'))
+        insert_newcustomer_query = 'INSERT INTO customer VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        try:
+            cursor.execute(insert_newcustomer_query, (
+                customer_email, first_name, last_name, customer_password, 
+                building_num, street_name, apt_num, city, state, zip_code, 
+                passport_num, passport_country, passport_expiry, date_of_birth,
+            ))
+            phone_numbers = request.form.getlist('customer_phone[]')
+            insert_phone_query = 'INSERT INTO customer_phone VALUES(%s, %s)'
+            phone_already_query = 'SELECT * from customer_phone where email_id = %s and phone_num = %s'
+            for phone in phone_numbers:
+                if(phone == ''): continue
+                cursor.execute(phone_already_query, (customer_email, phone))
+                phoneExists = cursor.fetchone();
+                if(phoneExists is None):
+                    cursor.execute(insert_phone_query, (customer_email, phone))
+            conn.commit()
+            cursor.close()
+            # Redirect to login page after registration
+            return redirect(url_for('customer-login'))
+        except Exception as e:
+            print(e)
+            # Handle errors and rollback transaction
+            conn.rollback()
+            cursor.close()
+            # Show an error message
+            return render_template('customer-register.html', error="An error occurred during registration.")
 
 		
 app.secret_key = 'some key that you will never guess'
