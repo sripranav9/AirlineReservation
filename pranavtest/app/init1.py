@@ -16,9 +16,9 @@ conn = pymysql.connect(host='localhost',
 #Define a route to hello function
 @app.route('/')
 def hello():
-	return render_template('index.html')
+	return render_template('search.html')
 
-@app.route('/search', methods=['GET', 'POST'])
+@app.route('/searchresults', methods=['GET', 'POST'])
 def search_flights():
     if request.method == 'POST':
         # Get data from form
@@ -49,10 +49,10 @@ def search_flights():
         cursor.close()
 
         # Render the results in a HTML table
-        return render_template('search.html', outbound_flights=outbound_flights, inbound_flights=inbound_flights, trip_type=trip_type)
+        return render_template('searchresults.html', outbound_flights=outbound_flights, inbound_flights=inbound_flights, trip_type=trip_type)
     
     # If method is GET, just render the search form
-    return render_template('index.html')
+    return render_template('search.html')
 
 		
 app.secret_key = 'some key that you will never guess'
