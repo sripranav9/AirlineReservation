@@ -1,6 +1,7 @@
 #Import Flask Library
 from flask import Flask, render_template, request, session, url_for, redirect
 import pymysql.cursors
+import hashlib
 
 #Initialize the app from Flask
 app = Flask(__name__)
@@ -79,11 +80,36 @@ def search_flights():
 
 @app.route('/registerAuth', methods=['GET', 'POST'])
 def registerAuth():
-	
-    # cursor = conn.cursor()
-	# query = 'SELECT * FROM customer WHERE username = %s'
-	# cursor.execute(query, (username))
-	return 
+
+    #get query to see whether the email already exists in the customer table
+    customer_email = request.form['emailid']
+    cursor = conn.cursor()
+    query = 'SELECT * FROM customer WHERE email = %s'
+    cursor.execute(query, (customer_email))
+    emailExists = cursor.fetchone()
+
+    error = None #declaring a variable maybe?
+    if (emailExists): 
+        #the emailExists variable has data - same email found in the database
+        error = "This user already exists in the database. Try Logging in"
+        
+    else:
+        #good to be added
+        customer_password = hashlib.md5(request.form['password'].encode()).hexdigest()
+        first_name = request.form['fname']
+        last_name = request.form['lname']
+        date_of_birth = request.form['date-of-birth']
+        building_num = request.form['building-num']
+        street_name = request.form['street-name']
+        apt_num = request.form['apt-num']
+        city = request.form['city']
+        state = request.form['state']
+        zip = request.form['zip-code']
+        passport_num = request.form['passport-number']
+        passport_country = request.form['passport-country']
+        passport_expiry = request.form['passport-expiry']
+
+    return redirect(url_for('customer-login'))
 
 		
 app.secret_key = 'some key that you will never guess'

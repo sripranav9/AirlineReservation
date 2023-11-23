@@ -6,7 +6,7 @@
 		var container = document.getElementById("phoneContainer");
 	    var newPhoneInput = document.createElement("input");
 	    newPhoneInput.type = "text";
-	    newPhoneInput.name = "staff_phone[]"; // Use an array to handle multiple phone number inputs
+	    newPhoneInput.name = "customer_phone[]"; // Use an array to handle multiple phone number inputs
 	    newPhoneInput.placeholder = "countrycode,phone";
 
 	    var lineBreak = document.createElement("br");
@@ -31,11 +31,13 @@
 		<input type="text" name = "fname" placeholder="first name" required/></br>
 		<input type="text" name = "lname" placeholder="last name" required/></br>
 		<label>Date of Birth: </label><input type="date" name = "date-of-birth" placeholder="date-of-birth" required/>
+		<!-- Contact list -->
 		<p>Contact</p>
 		<div id="phoneContainer">
-			<input type='text' name = "staff_phone[]" placeholder="countrycode,phone" maxlength="15" required> </br>
+			<input type='text' name = "customer_phone[]" placeholder="countrycode,phone" maxlength="15" required> </br>
 		</div>
 		<button type="button" onclick='addPhoneField()'>Add Phone Number</button> </br>
+		<!-- List field ends -->
 		<p>Address</p>
 		<input type="number" name = "building-num" placeholder="building number" required maxlength="10"/></br>
 		<input type="text" name = "street-name" placeholder="street name" required/></br>
