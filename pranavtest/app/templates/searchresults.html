@@ -7,7 +7,7 @@
             border: 0.5px solid black;
         }
     </style>
-    <link rel="stylesheet" href="/static/style.css">
+    <!-- <link rel="stylesheet" href="/static/style.css"> -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('flight-selection-form').addEventListener('change', function() {
@@ -24,7 +24,11 @@
     </script>
 </head>
 <body>
-    <a href="/search">Back</a>
+    <!-- <a href="/search">Back</a> -->
+    <!-- Using JavaScript to retreive information from the browser history -->
+    <!-- Navigate to the last page user came from -->
+    <a href="#" onclick="history.back();return false;">Back</a>
+
     <h1>Flight Results</h1>
     <!-- <br> -->
 

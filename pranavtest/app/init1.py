@@ -24,14 +24,14 @@ def home():
 
 #Define route for customer login
 @app.route('/customer-login')
-def customerlogin():
+def customer_login():
 	return render_template('customer-login.html')
 
 #Customer loginAuth and registerAuth, other related functions can be found in the CUSTOMER section below the "HOME - New Customer / Not logged in" section
 
 #Define route for customer register
 @app.route('/customer-register')
-def customerregister():
+def customer_register():
 	return render_template('customer-register.html')
 
 @app.route('/search')
@@ -127,7 +127,7 @@ def registerAuth():
             conn.commit()
             cursor.close()
             # Redirect to login page after registration
-            return redirect(url_for('customerlogin'))
+            return redirect(url_for('customer_login'))
         except Exception as e:
             print(e)
             # Handle errors and rollback transaction
@@ -162,7 +162,7 @@ def LoginAuth():
         error = 'Invalid login or username'
         return render_template('customer-login.html', error=error)
 
-def isNotValidCusomter():
+def isNotValidCustomer():
 	if(len(session) == 0): return True #no pair in session dictionary, so no session
 	if(session['email'] is None): return True 
 	if(session['password'] is None): return True
@@ -178,8 +178,8 @@ def isNotValidCusomter():
 
 @app.route('/customerHome', methods=['GET','POST'])
 def customerHome():
-        if(isNotValidCusomter()):
-            return redirect(url_for('customerlogin'))
+        if(isNotValidCustomer()):
+            return redirect(url_for('customer_login'))
         else:
             #session active - so pass the fname and other variables as necessary
             return render_template('customer-home.html', fname = session['fname'])
@@ -187,7 +187,9 @@ def customerHome():
 @app.route('/customer-logout')
 def logout():
     session.clear()
-    return redirect(url_for('customerlogin'))
+    return redirect(url_for('customer_login'))
+
+
 		
 app.secret_key = 'some key that you will never guess'
 # app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
