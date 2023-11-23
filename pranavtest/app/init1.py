@@ -16,6 +16,10 @@ conn = pymysql.connect(host='localhost',
 #Define a route to hello function
 @app.route('/')
 def hello():
+	return render_template('index.html')
+
+@app.route('/search')
+def search():
 	return render_template('search.html')
 
 @app.route('/searchresults', methods=['GET', 'POST'])
