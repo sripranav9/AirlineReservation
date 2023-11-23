@@ -14,7 +14,7 @@ conn = pymysql.connect(host='localhost',
                        cursorclass=pymysql.cursors.DictCursor)
 
 ####################################################################
-# HOME - New Customer / Not logged in
+#HOME - New Customer / Not logged in
 
 #Define a route for the index - home
 @app.route('/')
@@ -25,6 +25,8 @@ def home():
 @app.route('/customer-login')
 def customerlogin():
 	return render_template('customer-login.html')
+
+#Customer loginAuth and registerAuth can be found in the CUSTOMER section below the "HOME - New Customer / Not logged in" section
 
 #Define route for customer register
 @app.route('/customer-register')
@@ -75,6 +77,13 @@ def search_flights():
 ####################################################################
 # CUSTOMER
 
+@app.route('/registerAuth', methods=['GET', 'POST'])
+def registerAuth():
+	
+    # cursor = conn.cursor()
+	# query = 'SELECT * FROM customer WHERE username = %s'
+	# cursor.execute(query, (username))
+	return 
 
 		
 app.secret_key = 'some key that you will never guess'
