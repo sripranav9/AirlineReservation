@@ -156,6 +156,7 @@ def LoginAuth():
         session['password'] = password
         session['fname'] = data['first_name']
         session['lname'] = data['last_name']
+        session['dob'] = data['date_of_birth']
         
         # If login is successful, check if the user was trying to make a purchase
         if session.pop('attempting_purchase', None):
@@ -204,33 +205,6 @@ def logout():
     session.clear()
     return redirect(url_for('customer_login'))
 
-###
-# @app.route('/customer-purchase', methods=['GET','POST'])
-# def purchase():
-#     if request.method == 'POST' and isNotValidCustomer():
-#         #save the current session's flights to use after login
-#         session['selected_outbound'] = request.form.get('selected_outbound')
-#         session['selected_inbound'] = request.form.get('selected_inbound')
-#         session['attempting_purchase'] = True #flag to check after login
-#         #redirect customers to login since session is inactive
-
-#         # DEBUGGING: Print the selected flights 
-#         print("Selected Outbound Flight:", session['selected_outbound'])
-#         print("Selected Inbound Flight:", session['selected_inbound'])
-
-#         return redirect(url_for('customer_login'))
-#     else: #request.method == 'POST':
-#         # DEBUGGING: Print the selected flights 
-#         print("Selected Outbound Flight:", request.form.get('selected_outbound'))
-#         print("Selected Inbound Flight:", request.form.get('selected_inbound'))
-
-#          # Customer is logged in and has selected flights to purchase
-#         return render_template('customer-purchase.html',
-#                                selected_outbound=session.get('selected_outbound'),
-#                                selected_inbound=session.get('selected_inbound'))
-#     # # If it's a GET request, just render the purchase page
-#     # return render_template('customer-purchase.html')
-###
 @app.route('/customer-purchase', methods=['GET', 'POST'])
 def purchase():
     if request.method == 'POST':
@@ -238,6 +212,7 @@ def purchase():
             # Customer is not logged in but is trying to make a purchase
             session['selected_outbound'] = request.form.get('selected_outbound')
             session['selected_inbound'] = request.form.get('selected_inbound')
+            session['total_cost'] = request.form['total_cost'] 
             # Set a flag to indicate a purchase attempt
             session['attempting_purchase'] = True
             # Redirect to login page
@@ -247,13 +222,15 @@ def purchase():
             # Retrieve selected flights from the form or the session
             selected_outbound = request.form.get('selected_outbound') or session.get('selected_outbound')
             selected_inbound = request.form.get('selected_inbound') or session.get('selected_inbound')
+            total_cost = request.form.get('total_cost') or session.get('total_cost')
             # Clear the flights from the session if they were stored
             session.pop('selected_outbound', None)
             session.pop('selected_inbound', None)
+            session.pop('total_cost', None)
             # Render the purchase page with the selected flights
             return render_template('customer-purchase.html', 
                                    selected_outbound=selected_outbound,
-                                   selected_inbound=selected_inbound)
+                                   selected_inbound=selected_inbound, total_cost=total_cost)
     else:
         # GET request: Render the purchase page or redirect as needed
         # This is where you might redirect to the search page or handle accordingly

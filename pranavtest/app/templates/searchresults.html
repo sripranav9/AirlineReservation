@@ -19,6 +19,7 @@
                 if (inboundSelection) totalCost += parseFloat(inboundSelection.getAttribute('data-price'));
         
                 document.getElementById('total-cost').textContent = 'Total Cost: $' + totalCost.toFixed(2);
+                document.getElementById('total_cost_hidden').value = totalCost.toFixed(2); //to carry over the price to customer-purchase page
             });
         });
     </script>
@@ -96,6 +97,7 @@
         <!-- A total view and submit button to submit the selected flights - next page -->
         <div>
             <span id="total-cost">Total Cost: $0</span>
+            <input type="hidden" id="total_cost_hidden" name="total_cost" value="0">
             <input type="submit" value="Confim Selection">
         </div>
     </form>
