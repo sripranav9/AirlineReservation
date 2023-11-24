@@ -2,7 +2,7 @@
 from flask import Flask, render_template, request, session, url_for, redirect
 import pymysql.cursors
 import hashlib
-import json
+from datetime import datetime
 
 #Initialize the app from Flask
 app = Flask(__name__)
@@ -175,7 +175,7 @@ def view_flights():
 		return redirect(url_for('login_airline_staff'))
 
 	cursor = conn.cursor()
-	thirty_day_query = 'SELECT * FROM flight WHERE airline_name = %s and CURRENT_DATE <= departure_date and departure_date <= DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY)'
+	thirty_day_query = 'SELECT * FROM flight WHERE airline_name = %s and CURRENT_DATE <= departure_date and departure_date <= DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY) ORDER BY departure_date DESC'
 	cursor.execute(thirty_day_query, (session['airline']))
 	thirty_day_flights = cursor.fetchall()
 	cursor.close()
@@ -256,11 +256,12 @@ def createNewFlight():
 		return redirect(url_for('login_airline_staff'))
 
 	cursor = conn.cursor();
-	#get query to see whether airline exists
-	airline_name = request.form['airline_name']
-	airline_query = 'SELECT * FROM airline where airline_name = %s'
-	cursor.execute(airline_query, (airline_name))
-	airlineExists = cursor.fetchone()
+	flight_num = request.form['flight_num']
+	departure_date = request.form['departure_date']
+	departure_time = request.form['departure_time']
+	flight_exists_query = 'SELECT * FROM flight where airline_name = %s and flight_num = %s and departure_time = %s and departure_date = %s'
+	cursor.execute(flight_exists_query, (session['airline'], flight_num, departure_time, departure_date))
+	flightExists = cursor.fetchone()
 
 	#get query to see whether arrival airport exists
 	arrival_airport = request.form['arrival_airport']
@@ -280,26 +281,181 @@ def createNewFlight():
 	assigned_airplane_airline_query = 'SELECT * FROM airplane where airline_name = %s and airplaneID = %s'
 	cursor.execute(assigned_airplane_airline_query, (assigned_airplane_airline, airplane_ID))
 	assignedAirplane = cursor.fetchone()
+	
+	if(flightExists is not None):
+		error = "This Flight Already Exists"
+		cursor.close()
+		return render_template('create_new_flight.html', error = error)
+	
+	elif(arrivalAirportExists is None):
+		error = "This Arrival Airport Does Not Exist"
+		cursor.close()
+		return render_template('create_new_flight.html', error = error)
 
+	elif(departureAirportExists is None):
+		error = "This Departure Aiport Does Not Exist"
+		cursor.close()
+		return render_template('create_new_flight.html', error = error)
+
+	elif(assignedAirplane is None):
+		error = "This Airplane Does Not Exist"
+		cursor.close()
+		return render_template('create_new_flight.html', error = error)
+
+	else:
+		arrival_date = request.form['arrival_date']
+		arrival_time = request.form['arrival_time']
+		base_price = request.form['base_price_ticket']
+		selected_status = request.form['status'];
+		insert_flight_query = 'INSERT INTO flight VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+		cursor.execute(insert_flight_query, (session['airline'], departure_airport, arrival_airport, assigned_airplane_airline, airplane_ID, flight_num, departure_date, departure_time, arrival_date, arrival_time, base_price, selected_status))
+
+		##If I want to create tickets for each flight created I do it here
+
+
+
+		conn.commit()
+		cursor.close()
+
+
+		return redirect(url_for('view_flights'))
+
+
+@app.route('/create_new_airplane', methods=['GET', 'POST'])
+def create_new_airplane():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+	return render_template('create_new_airplane.html')
+
+@app.route('/createNewAirplane', methods=['GET','POST'])
+def createNewAirplane():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+
+	cursor = conn.cursor()
+	airplane_ID = request.form['airplaneID']
+
+	airplane_exists_query = 'SELECT * from airplane where airplaneID = %s and airline_name = %s'
+	cursor.execute(airplane_exists_query, (airplane_ID, session['airline']))
+	airplaneExists = cursor.fetchone()
+
+	if(airplaneExists is not None):
+		error = "This airplane already exists"
+		cursor.close()
+		return render_template('create_new_airplane.html', error = error)
+
+	else:
+		num_of_seats = request.form['num_of_seats']
+		manufacturing_company = request.form['manufacturing_company']
+		manufacturing_date = request.form['manufacturing_date']
+		model_num = request.form['model_num']
+		insert_airplane_query = 'INSERT INTO airplane VALUES(%s, %s, %s, %s, %s, %s)'
+		cursor.execute(insert_airplane_query, (session['airline'], airplane_ID, num_of_seats, manufacturing_company, manufacturing_date, model_num))
+		conn.commit();
+		cursor.close()
+		return redirect(url_for('view_airplanes'))
+
+@app.route('/view_airplanes', methods=['GET', 'POST'])
+def view_airplanes():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+	cursor = conn.cursor()
+	airplanes_query = 'SELECT * FROM airplane where airline_name = %s'
+	cursor.execute(airplanes_query, (session['airline']))
+	airplanes = cursor.fetchall();
 	cursor.close()
 
-	if(airlineExists is None):
-		error = "This Airline Does not exist"
-		return render_template('create_new_flight.html', error = error)
-
-	if(arrivalAirportExists is None):
-		error = "This Arrival Airport Does not Exist"
-		return render_template('create_new_flight.html', error = error)
-
-	if(departureAirportExists is None):
-		error = "This Departure Aiport Does not Exist"
-		return render_template('create_new_flight.html', error = error)
-
-	if(assignedAirplane is None):
-		error = "This Airplane does not exist"
-		return render_template('create_new_flight.html', error = error)
+	return render_template('view_airplanes.html', airplanes = airplanes)
 
 
+@app.route('/create_new_airport', methods=['GET', 'POST'])
+def create_new_airport():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+	return render_template('create_new_airport.html')
+
+@app.route('/createNewAirport', methods=['GET','POST'])
+def createNewAirport():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+
+	cursor = conn.cursor()
+	airport_code = request.form['code']
+	airport_exists_query = 'SELECT * FROM airport where code = %s'
+	cursor.execute(airport_exists_query, (airport_code))
+	airportExists = cursor.fetchone()
+
+	if(airportExists is not None):
+		error = 'This airport code has already been used'
+		cursor.close()
+		return render_template('create_new_airport.html', error = error)
+	else:
+		airport_name = request.form['airport_name']
+		airport_city = request.form['city']
+		airport_country = request.form['country']
+		airport_terminals = request.form['terminals']
+		airport_type = request.form['airport_type']
+		new_airport_insert = 'INSERT INTO airport VALUES (%s, %s, %s, %s, %s, %s)'
+
+		cursor.execute(new_airport_insert, (airport_code, airport_name, airport_city, airport_city, airport_terminals, airport_type))
+		conn.commit();
+		cursor.close();
+		error = 'Airport ' + airport_code + ' as successfulyl been created'
+		return render_template('create_new_airport.html', error = error)
+
+@app.route('/search_flight_ratings', methods=['GET', 'POST'])
+def search_flight_ratings():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+	return render_template('search_flight_ratings.html')
+
+
+@app.route('/searchFlightRatings', methods=['GET', 'POST'])
+def searchFlightRatings():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+
+	cursor = conn.cursor()
+	airline_name = request.form['airline_name']
+	flight_num = request.form['flight_num']
+	departure_date = request.form['departure_date']
+	departure_time = request.form['departure_time']
+
+	flight_exists_query = 'SELECT * FROM flight where airline_name = %s and flight_num = %s and departure_time = %s and departure_date = %s'
+	cursor.execute(flight_exists_query, (airline_name, flight_num, departure_date, departure_time))
+	flightExists = cursor.fetchone()
+
+	current_date = datetime.now().date()
+	current_time = datetime.now().time()
+
+	departure_date_nonString = datetime.strptime(departure_date, '%Y-%m-%d').date()
+	departure_time_nonString = datetime.strptime(departure_time, '%H:%M:%S').time()
+
+	if(flightExists is not None):
+		error = 'This Flight does not exist'
+		return render_template('search_flight_ratings.html', error = error)
+	elif(departure_date_nonString > current_date and departure_time_nonString > current_time):
+		error = 'This Flight has not happened yet and therefore has no reviews'
+		return render_template('search_flight_ratings.html', error = error)
+
+	return printFlightRatings(flightExists)
+
+
+@app.route('/printFlightRatings', methods=['GET','POST'])
+def printFlightRatings(flight):
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+
+	cursor = conn.cursor()
+	reviews_query = 'SELECT * FROM review where ticketID in (SELECT ticketID FROM ticket WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s)'
+	review_avg_query = 'SELECT avg(rate) FROM review where ticketID in (SELECT ticketID FROM ticket WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s)'
+	cursor.execute(reviews_query, (airline_name, flight_num, departure_date, departure_time))
+	reviews = cursor.fetchall()
+	cursor.execute(review_avg_query, (flight[0], flight[1], flight[2], flight[3]))
+	avgReview = cursor.fetchone()
+	cursor.close()
+
+	return render_template('print_flight_rating.html', reviews = reviews, avgReview = avgReview, flight = flight)
 
 
 
