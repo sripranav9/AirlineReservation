@@ -156,7 +156,14 @@ def LoginAuth():
         session['password'] = password
         session['fname'] = data['first_name']
         session['lname'] = data['last_name']
-        return redirect(url_for('customerHome'))
+        
+        # If login is successful, check if the user was trying to make a purchase
+        if session.pop('attempting_purchase', None):
+            # Redirect to the purchase route if they were trying to buy something
+            return redirect(url_for('purchase'))
+        else:
+            # If not, redirect to the customer's home page
+            return redirect(url_for('customerHome'))
     else:
         #if tuple doesn't exist then throw error message
         error = 'Invalid login or username'
@@ -181,6 +188,9 @@ def customerHome():
         if(isNotValidCustomer()):
             return redirect(url_for('customer_login'))
         else:
+            #if customer logs in after selecting flights
+            if 'selected_outbound' in session or 'selected_inbound' in session:
+                return redirect(url_for('purchase'))
             #session active - so pass the fname and other variables as necessary
             return render_template('customer-home.html', fname = session['fname'])
 
@@ -189,12 +199,57 @@ def logout():
     session.clear()
     return redirect(url_for('customer_login'))
 
+@app.route('/customer-purchase', methods=['GET','POST'])
+def purchase():
+    if request.method == 'POST' and isNotValidCustomer():
+        #save the current session's flights to use after login
+        session['selected_outbound'] = request.form.get('selected_outbound')
+        session['selected_inbound'] = request.form.get('selected_inbound')
+        session['attempting_purchase'] = True #flag to check after login
+        #redirect customers to login since session is inactive
+
+        # DEBUGGING: Print the selected flights 
+        print("Selected Outbound Flight:", session['selected_outbound'])
+        print("Selected Inbound Flight:", session['selected_inbound'])
+
+        return redirect(url_for('customer_login'))
+    else: #request.method == 'POST':
+        # DEBUGGING: Print the selected flights 
+        print("Selected Outbound Flight:", request.form.get('selected_outbound'))
+        print("Selected Inbound Flight:", request.form.get('selected_inbound'))
+
+         # Customer is logged in and has selected flights to purchase
+        return render_template('customer-purchase.html',
+                               selected_outbound=session.get('selected_outbound'),
+                               selected_inbound=session.get('selected_inbound'))
+    # # If it's a GET request, just render the purchase page
+    # return render_template('customer-purchase.html')
+
+
+@app.route('/customer-purchase-confirmation', methods=['GET','POST'])
+def purchase_confirmation():
+    if(isNotValidCustomer()):
+        # The user is not logged in, redirect them to the login page
+        return redirect(url_for('customer_login'))
+
+    # Retrieve the session variables to confirm the purchase
+    customer_email = session['email']
+    selected_outbound = session.pop('selected_outbound', None)
+    selected_inbound = session.pop('selected_inbound', None)
+
+    # Process the form data from the customer-purchase page to confirm the purchase
+    # For example, store the ticket details in the database
+
+    # After processing, redirect to a page that confirms the purchase
+
+    return render_template('customer-purchase-confirmation.html')
+
 
 		
 app.secret_key = 'some key that you will never guess'
 # app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
 #Run the app on localhost port 5000
-#debug = True -> you don't have to restart flask
+# debug = True -> you don't have to restart flask
 #for changes to go through, TURN OFF FOR PRODUCTION
 if __name__ == "__main__":
 	app.run('127.0.0.1', 5000, debug = True)
