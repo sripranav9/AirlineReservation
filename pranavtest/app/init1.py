@@ -29,9 +29,8 @@ def home():
 def customer_login():
 	return render_template('customer-login.html')
 
-#Customer loginAuth and registerAuth, other related functions can be found in the CUSTOMER section below the "HOME - New Customer / Not logged in" section
+# Customer loginAuth and registerAuth, other related functions can be found in the CUSTOMER section below the "HOME - New Customer / Not logged in" section
 
-#Define route for customer register
 @app.route('/customer-register')
 def customer_register():
 	return render_template('customer-register.html')
@@ -53,10 +52,12 @@ def search_flights():
 
         # SQL Query the database
         cursor = conn.cursor()
-        # cursor.execute(
-        #     'SELECT * FROM flight WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s',
-        #     (origin_code, destination_code, departure_date)
-        # )
+            # Query for fetching all the details from flight table
+            # cursor.execute(
+            #     'SELECT * FROM flight WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s',
+            #     (origin_code, destination_code, departure_date)
+            # )
+        # Query for fetching all the details + dynamic price from flight table
         cursor.execute('''
         SELECT *,
         base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS dynamic_price
@@ -65,13 +66,14 @@ def search_flights():
 		''', (origin_code, destination_code, departure_date))
         outbound_flights = cursor.fetchall()
 
-        # Initialise an empty list for inbound flights
         # If round-trip, query the database for inbound flights
         if trip_type == 'round-trip' and return_date:
-            # cursor.execute(
-            #     'SELECT * FROM flight WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s',
-            #     (destination_code, origin_code, return_date)
-            # )
+                # Query for fetching all the details from flight table
+                # cursor.execute(
+                #     'SELECT * FROM flight WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s',
+                #     (destination_code, origin_code, return_date)
+                # )
+            # Query for fetching all the details + dynamic price from flight table
             cursor.execute('''
                 SELECT *,
                 base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS dynamic_price
@@ -102,13 +104,12 @@ def registerAuth():
     cursor.execute(query, (customer_email))
     emailExists = cursor.fetchone()
 
-    error = None #declaring a variable maybe?
     if (emailExists): 
-        #the emailExists variable has data - same email found in the database
+        # The emailExists variable has data - same email found in the database
         return render_template('customer-register.html', error = "This user already exists in the database. Try Logging in")
         
     else:
-        #good to be added
+        # Verified as a new user - email not found
         customer_password = hashlib.md5(request.form['password'].encode()).hexdigest()
         first_name = request.form['fname']
         last_name = request.form['lname']
@@ -123,6 +124,7 @@ def registerAuth():
         passport_country = request.form['passport-country']
         passport_expiry = request.form['passport-expiry']
         insert_newcustomer_query = 'INSERT INTO customer VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        
         try:
             cursor.execute(insert_newcustomer_query, (
                 customer_email, first_name, last_name, customer_password, 
@@ -165,7 +167,7 @@ def LoginAuth():
         
     error = None
     if(data):
-        #if tuple exists create a session for the the user and login
+        # If tuple exists - create a session for the the user and login
         session['email'] = email
         session['password'] = password
         session['fname'] = data['first_name']
@@ -175,9 +177,7 @@ def LoginAuth():
         # If login is successful, check if the user was trying to make a purchase
         if session.pop('attempting_purchase', None):
             # Redirect to the purchase route if they were trying to buy something
-            # selected_outbound = session.pop('selected_outbound', None)
             selected_outbound = session.get('selected_outbound')
-            # selected_inbound = session.pop('selected_inbound', None)
             selected_inbound = session.get('selected_inbound')
             total_cost = session.get('total_cost')
             # return redirect(url_for('purchase'))
@@ -188,12 +188,12 @@ def LoginAuth():
             # If not, redirect to the customer's home page
             return redirect(url_for('customerHome'))
     else:
-        #if tuple doesn't exist then throw error message
+        # Throw an error message if the tuple does not exist
         error = 'Invalid login or username'
         return render_template('customer-login.html', error=error)
 
 def isNotValidCustomer():
-	if(len(session) == 0): return True #no pair in session dictionary, so no session
+	if(len(session) == 0): return True # No pair in session dictionary i.e. no session created yet
 	if(session['email'] is None): return True 
 	if(session['password'] is None): return True
 	email = session['email']
@@ -211,7 +211,7 @@ def customerHome():
         if(isNotValidCustomer()):
             return redirect(url_for('customer_login'))
         else:
-            #if customer logs in after selecting flights
+            # If customer logs in after selecting flights
             if 'selected_outbound' in session or 'selected_inbound' in session:
                 # return redirect(url_for('purchase'))
                 return render_template('customer-home.html', fname = session['fname'])
@@ -220,20 +220,9 @@ def customerHome():
 
 @app.route('/customer-logout')
 def logout():
+    # Clear all the session data
     session.clear()
     return redirect(url_for('customer_login'))
-
-# Calculate the final ticket price based on demand
-def calculate_final_price(base_price, total_seats, available_seats):
-    booked_percentage = ((total_seats - available_seats) / total_seats) * 100
-    if booked_percentage >= 80:
-        return base_price * 1.25  # Increase price by 25%
-    else:
-        return base_price
-
-# Inside your purchase confirmation route, before inserting into the purchase table
-# final_price = calculate_final_price(base_price, total_seats, available_seats)
-
 
 @app.route('/customer-purchase', methods=['GET', 'POST'])
 def purchase():
@@ -249,9 +238,9 @@ def purchase():
             return redirect(url_for('customer_login'))
         else:
             # Customer is logged in and has selected flights
-            # Retrieve selected flights from the form or the session
 
-            # These 2 lines made me spend 2 days. Flagging this to chreish my debugging skills later
+            # Missing these 2 lines made me spend 2 days. Flagging this to cherish my debugging skills later
+            # Retrieve selected flights from the form or the session
             session['selected_outbound'] = request.form.get('selected_outbound')
             session['selected_inbound'] = request.form.get('selected_inbound')
             ##
@@ -291,8 +280,6 @@ def generate_ticket_id(cursor):
         result = cursor.fetchone()
         if result is None:
             return ticket_id
-
-
 
 @app.route('/customer-purchase-confirmation', methods=['GET','POST'])
 def purchase_confirmation():
@@ -388,7 +375,6 @@ def purchase_confirmation():
     except Exception as e:
          print('Could not proceed with purchase transaction. Aborting.')
          print(e)
-        #  print(ticketID)
          conn.rollback()
          error = "Could not complete the transaction. Aborted."
          return render_template('customer-purchase.html', error=error)
