@@ -19,14 +19,14 @@ INSERT INTO airline_staff VALUES ("Jet Blue", "ss14741", "ss14741_1", "Sri Prana
 INSERT INTO airline_staff VALUES ("Jet Blue", "tlw9927", "tlw9927_1", "Theo", "Welckle", "2002-05-15" );
 
 -- Flight inserts
-INSERT INTO flight VALUES ('Jet Blue', 'JFK', 'HYD', 'Jet Blue', 'B6623', 'JB101', '2023-11-07', '08:00:00', '2023-11-08', '21:00:00', 750.00, 'on_time');
-INSERT INTO flight VALUES ('United', 'PVG', 'JFK', 'United', 'UA002', 'UA204', '2023-11-07', '13:00:00', '2023-11-07', '19:30:00', 1200.00, 'delayed');
-INSERT INTO flight VALUES ('Jet Blue', 'HYD', 'JFK', 'Jet Blue', 'B6623', 'JB302', '2023-11-09', '20:30:00', '2023-11-10', '05:00:00', 800.00, 'canceled');
-INSERT INTO flight VALUES ('United', 'JFK', 'PVG', 'United', 'UA410', 'UA408', '2023-11-08', '09:45:00', '2023-11-09', '11:15:00', 1300.00, 'on_time');
-INSERT INTO flight VALUES ('Jet Blue', 'PVG', 'HYD', 'Jet Blue', 'B6623', 'JB404', '2023-11-10', '23:00:00', '2023-11-11', '02:30:00', 900.00, 'delayed');
-INSERT INTO flight VALUES ('United', 'HYD', 'PVG', 'United', 'UA448', 'UA506', '2023-11-11', '15:30:00', '2023-11-12', '08:45:00', 1100.00, 'on_time');
-INSERT INTO flight VALUES ('Jet Blue', 'JFK', 'PVG', 'Jet Blue', 'B6623', 'JB607', '2023-11-12', '17:00:00', '2023-11-13', '09:00:00', 950.00, 'canceled');
-INSERT INTO flight VALUES ('United', 'PVG', 'HYD', 'United', 'UA002', 'UA708', '2023-11-13', '22:15:00', '2023-11-14', '03:40:00', 1150.00, 'delayed');
+INSERT INTO flight VALUES ('Jet Blue', 'JFK', 'HYD', 'Jet Blue', 'B6623', 'JB101', '2023-11-07', '08:00:00', '2023-11-08', '21:00:00', 750.00, 'on_time',(SELECT num_of_seats FROM airplane WHERE airline_name = 'Jet Blue' AND airplaneID = 'B6623'),(SELECT num_of_seats FROM airplane WHERE airline_name = 'Jet Blue' AND airplaneID = 'B6623'));
+INSERT INTO flight VALUES ('United', 'PVG', 'JFK', 'United', 'UA002', 'UA204', '2023-11-07', '13:00:00', '2023-11-07', '19:30:00', 1200.00, 'delayed',(SELECT num_of_seats FROM airplane WHERE airline_name = 'United' AND airplaneID = 'UA002'),(SELECT num_of_seats FROM airplane WHERE airline_name = 'United' AND airplaneID = 'UA002'));
+INSERT INTO flight VALUES ('Jet Blue', 'HYD', 'JFK', 'Jet Blue', 'B6623', 'JB302', '2023-11-09', '20:30:00', '2023-11-10', '05:00:00', 800.00, 'canceled',(SELECT num_of_seats FROM airplane WHERE airline_name = 'Jet Blue' AND airplaneID = 'B6623'),(SELECT num_of_seats FROM airplane WHERE airline_name = 'Jet Blue' AND airplaneID = 'B6623'));
+INSERT INTO flight VALUES ('United', 'JFK', 'PVG', 'United', 'UA410', 'UA408', '2023-11-08', '09:45:00', '2023-11-09', '11:15:00', 1300.00, 'on_time',(SELECT num_of_seats FROM airplane WHERE airline_name = 'United' AND airplaneID = 'UA410'),(SELECT num_of_seats FROM airplane WHERE airline_name = 'United' AND airplaneID = 'UA410'));
+INSERT INTO flight VALUES ('Jet Blue', 'PVG', 'HYD', 'Jet Blue', 'B6623', 'JB404', '2023-11-10', '23:00:00', '2023-11-11', '02:30:00', 900.00, 'delayed',(SELECT num_of_seats FROM airplane WHERE airline_name = 'Jet Blue' AND airplaneID = 'B6623'),(SELECT num_of_seats FROM airplane WHERE airline_name = 'Jet Blue' AND airplaneID = 'B6623'));
+INSERT INTO flight VALUES ('United', 'HYD', 'PVG', 'United', 'UA448', 'UA506', '2023-11-11', '15:30:00', '2023-11-12', '08:45:00', 1100.00, 'on_time',(SELECT num_of_seats FROM airplane WHERE airline_name = 'United' AND airplaneID = 'UA448'),(SELECT num_of_seats FROM airplane WHERE airline_name = 'United' AND airplaneID = 'UA448'));
+INSERT INTO flight VALUES ('Jet Blue', 'JFK', 'PVG', 'Jet Blue', 'B6623', 'JB607', '2023-11-12', '17:00:00', '2023-11-13', '09:00:00', 950.00, 'canceled',(SELECT num_of_seats FROM airplane WHERE airline_name = 'Jet Blue' AND airplaneID = 'B6623'),(SELECT num_of_seats FROM airplane WHERE airline_name = 'Jet Blue' AND airplaneID = 'B6623'));
+INSERT INTO flight VALUES ('United', 'PVG', 'HYD', 'United', 'UA002', 'UA708', '2023-11-13', '22:15:00', '2023-11-14', '03:40:00', 1150.00, 'delayed',(SELECT num_of_seats FROM airplane WHERE airline_name = 'United' AND airplaneID = 'UA002'),(SELECT num_of_seats FROM airplane WHERE airline_name = 'United' AND airplaneID = 'UA002'));
 
 -- Ticket inserts
 INSERT INTO ticket VALUES ('Jet Blue', 'JB101', '2023-11-07', '08:00:00', 10001);

@@ -2,6 +2,7 @@
 from flask import Flask, render_template, request, session, url_for, redirect
 import pymysql.cursors
 import hashlib
+import uuid
 
 #Initialize the app from Flask
 app = Flask(__name__)
@@ -223,10 +224,13 @@ def purchase():
             selected_outbound = request.form.get('selected_outbound') or session.get('selected_outbound')
             selected_inbound = request.form.get('selected_inbound') or session.get('selected_inbound')
             total_cost = request.form.get('total_cost') or session.get('total_cost')
+            
             # Clear the flights from the session if they were stored
-            session.pop('selected_outbound', None)
-            session.pop('selected_inbound', None)
-            session.pop('total_cost', None)
+            # session.pop('selected_outbound', None)
+            # session.pop('selected_inbound', None)
+            # session.pop('total_cost', None)
+            # Commented because - using these in customer-purchase-confirmation
+            
             # Render the purchase page with the selected flights
             return render_template('customer-purchase.html', 
                                    selected_outbound=selected_outbound,
@@ -236,6 +240,13 @@ def purchase():
         # This is where you might redirect to the search page or handle accordingly
         return render_template('customer-purchase.html')
 
+def generate_ticket_id(cursor):
+    while True:
+        ticket_id = uuid.uuid4().int & (1<<64)-1
+        cursor.execute('SELECT EXISTS(SELECT * FROM ticket WHERE ticketID = %s)', (ticket_id,))
+        if not cursor.fetchone()[0]:
+            return ticket_id
+
 @app.route('/customer-purchase-confirmation', methods=['GET','POST'])
 def purchase_confirmation():
     if(isNotValidCustomer()):
@@ -244,15 +255,89 @@ def purchase_confirmation():
 
     # Retrieve the session variables to confirm the purchase
     customer_email = session['email']
+    customer_fname = session['fname'], 
+    customer_lname = session['lname'], 
+    customer_dob = session['date_of_birth']
     selected_outbound = session.pop('selected_outbound', None)
     selected_inbound = session.pop('selected_inbound', None)
+    # total_cost = session.pop('total_cost', None)
 
     # Process the form data from the customer-purchase page to confirm the purchase
-    # For example, store the ticket details in the database
+    card_type = request.form['card_type']
+    card_number = request.form['card_number']
+    name_on_card = request.form['name_on_card']
+    expiration_date = request.form['expiration_date']
 
+    # Generate a unique ticketID
+    cursor = conn.cursor()
+    ticketID = generate_ticket_id(cursor)
+
+    # Add a tuple (details) to the purchase table
+    try:
+        purchase_insert_query = '''
+        INSERT INTO purchase 
+        (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time)
+        VALUES 
+        (%s, %s, %s, %s, %s, %s, %s, %s, %s, CURDATE(), CURTIME())
+        '''
+        cursor.execute(purchase_insert_query, 
+                    (ticketID, 
+                        customer_email, 
+                        customer_fname, 
+                        customer_lname, 
+                        customer_dob, 
+                        card_type, 
+                        card_number, 
+                        name_on_card, 
+                        expiration_date)
+                        )
+        
+        # Store the ticket details in the ticket table
+        if selected_outbound:
+            # Split the concatenated string to get specific details
+            outbound_details = selected_outbound.split('_')
+            ticket_insert_query = '''
+            INSERT INTO ticket (ticketID, airline_name, flight_num, departure_date, departure_time)
+            VALUES (%s, %s, %s, %s, %s)
+            '''
+            cursor.execute(ticket_insert_query, (ticketID, outbound_details[1], outbound_details[0], outbound_details[2], outbound_details[3]))
+
+            # Update the available seats for the outbound flight
+            update_seats_query = '''
+            UPDATE flight SET available_seats = available_seats - 1
+            WHERE flight_num = %s AND departure_date = %s
+            '''
+            cursor.execute(update_seats_query, (outbound_details[0], outbound_details[2]))
+
+        if selected_inbound:
+            inbound_details = selected_inbound.split('_')
+            ticket_insert_query = '''
+            INSERT INTO ticket (ticketID, airline_name, flight_num, departure_date, departure_time)
+            VALUES (%s, %s, %s, %s, %s)
+            '''
+            cursor.execute(ticket_insert_query, (ticketID, inbound_details[1], inbound_details[0], inbound_details[2], inbound_details[3]))
+
+            # Update the available seats for the inbound flight
+            update_seats_query = '''
+            UPDATE flight SET available_seats = available_seats - 1
+            WHERE flight_num = %s AND departure_date = %s
+            '''
+            cursor.execute(update_seats_query, (inbound_details[0], inbound_details[2]))
+
+        # Commit the changes to the database
+        conn.commit()
+
+    except:
+         print('Could not proceed with purchase transaction. Aborting.')
+         conn.rollback()
+         error = "Could not complete the transaction. Aborted."
+         return render_template('error.html', error=error)
+
+    finally:
+        # Ensure cursor is closed regardless
+        cursor.close()
     # After processing, redirect to a page that confirms the purchase
-
-    return render_template('customer-purchase-confirmation.html')
+    return render_template('customer-purchase-confirmation.html', ticketID=ticketID)
 
 
 		

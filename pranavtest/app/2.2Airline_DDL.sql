@@ -75,6 +75,8 @@ create table flight
 	 arrival_time					time,
 	 base_price_ticket				decimal,
 	 flight_status					varchar(8) CHECK (flight_status IN ('on_time', 'delayed', 'canceled')),
+	 total_seats					int, -- Added while doing Part 3
+	 available_seats				int, -- Added while doing Part 3
 
 	 primary key(airline_name, flight_num, departure_date, departure_time),
 	 foreign key(airline_name) references airline(airline_name),
@@ -130,7 +132,8 @@ create table review
 
 	 primary key(ticketID),
 	 foreign key(ticketID) references ticket(ticketID),
-	 foreign key(email_id) references customer(email_id)
+	-- Commented out on 11/23 to correct the change/match relational schema definitions
+	--  foreign key(email_id) references customer(email_id)
 	);
 
 create table purchase
