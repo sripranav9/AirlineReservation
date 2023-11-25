@@ -30,13 +30,16 @@
         <input type="text" id="name_on_card" name="name_on_card" required><br>
 
         <label for="expiration_date">Expiration Date:</label>
-        <input type="month" id="expiration_date" name="expiration_date" required><br>
+        <input type="date" id="expiration_date" name="expiration_date" required><br>
 
         <br>
         <span>Grand Total = ${{ total_cost if total_cost else 'Session issue, logout and log back in: go to /customer-login' }}</span><br><br>
         <input type="submit" value="Confirm Purchase">
     </form>
-
+    {% if error %}
+		<p class="error"><strong>Error:</strong> {{error}}</p>
+        <a href="/customer-login">Login again</a>
+	{% endif %}
 </body>
 
 </html>

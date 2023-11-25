@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, session, url_for, redirect
 import pymysql.cursors
 import hashlib
 import uuid
+import random
 
 #Initialize the app from Flask
 app = Flask(__name__)
@@ -240,12 +241,30 @@ def purchase():
         # This is where you might redirect to the search page or handle accordingly
         return render_template('customer-purchase.html')
 
+        
+# def generate_ticket_id(cursor):
+#     while True:
+#         # Generate a random ticket ID
+#         ticket_id = uuid.uuid4().int & (1<<64)-1
+#         # Check if this ticket ID already exists in the database
+#         cursor.execute('SELECT ticketID FROM ticket WHERE ticketID = %s', (ticket_id,))
+#         result = cursor.fetchone()
+#         # If fetchone() does not retrieve any rows, the ticket ID does not exist
+#         if result is None:
+#             return ticket_id
+#         # If result is not None, the while loop will continue and generate a new ticket ID
+
 def generate_ticket_id(cursor):
+    max_int = 2147483647  # Maximum value for a signed 4-byte integer
     while True:
-        ticket_id = uuid.uuid4().int & (1<<64)-1
-        cursor.execute('SELECT EXISTS(SELECT * FROM ticket WHERE ticketID = %s)', (ticket_id,))
-        if not cursor.fetchone()[0]:
+        # Generate a random ticket ID
+        ticket_id = random.randint(1, max_int)
+        cursor.execute('SELECT ticketID FROM ticket WHERE ticketID = %s', (ticket_id))
+        result = cursor.fetchone()
+        if result is None:
             return ticket_id
+
+
 
 @app.route('/customer-purchase-confirmation', methods=['GET','POST'])
 def purchase_confirmation():
@@ -257,7 +276,7 @@ def purchase_confirmation():
     customer_email = session['email']
     customer_fname = session['fname'], 
     customer_lname = session['lname'], 
-    customer_dob = session['date_of_birth']
+    # customer_dob = session['dob'] having an error with the date format
     selected_outbound = session.pop('selected_outbound', None)
     selected_inbound = session.pop('selected_inbound', None)
     # total_cost = session.pop('total_cost', None)
@@ -278,14 +297,14 @@ def purchase_confirmation():
         INSERT INTO purchase 
         (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time)
         VALUES 
-        (%s, %s, %s, %s, %s, %s, %s, %s, %s, CURDATE(), CURTIME())
+        (%s, %s, %s, (SELECT date_of_birth FROM customer WHERE email_id = %s), %s, %s, %s, %s, %s, CURDATE(), CURTIME())
         '''
         cursor.execute(purchase_insert_query, 
                     (ticketID, 
                         customer_email, 
                         customer_fname, 
                         customer_lname, 
-                        customer_dob, 
+                        customer_email, 
                         card_type, 
                         card_number, 
                         name_on_card, 
@@ -305,9 +324,9 @@ def purchase_confirmation():
             # Update the available seats for the outbound flight
             update_seats_query = '''
             UPDATE flight SET available_seats = available_seats - 1
-            WHERE flight_num = %s AND departure_date = %s
+            WHERE airline_name = %s AND flight_num = %s AND departure_date = %s AND departure_time = %s
             '''
-            cursor.execute(update_seats_query, (outbound_details[0], outbound_details[2]))
+            cursor.execute(update_seats_query, (outbound_details[1], outbound_details[0], outbound_details[2], outbound_details[3]))
 
         if selected_inbound:
             inbound_details = selected_inbound.split('_')
@@ -320,18 +339,19 @@ def purchase_confirmation():
             # Update the available seats for the inbound flight
             update_seats_query = '''
             UPDATE flight SET available_seats = available_seats - 1
-            WHERE flight_num = %s AND departure_date = %s
+            WHERE airline_name = %s AND flight_num = %s AND departure_date = %s AND departure_time = %s
             '''
-            cursor.execute(update_seats_query, (inbound_details[0], inbound_details[2]))
+            cursor.execute(update_seats_query, (outbound_details[1], outbound_details[0], outbound_details[2], outbound_details[3]))
 
         # Commit the changes to the database
         conn.commit()
 
-    except:
+    except Exception as e:
          print('Could not proceed with purchase transaction. Aborting.')
+         print(e)
          conn.rollback()
          error = "Could not complete the transaction. Aborted."
-         return render_template('error.html', error=error)
+         return render_template('customer-purchase.html', error=error)
 
     finally:
         # Ensure cursor is closed regardless
