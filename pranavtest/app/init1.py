@@ -163,8 +163,10 @@ def LoginAuth():
         # If login is successful, check if the user was trying to make a purchase
         if session.pop('attempting_purchase', None):
             # Redirect to the purchase route if they were trying to buy something
-            selected_outbound = session.pop('selected_outbound', None)
-            selected_inbound = session.pop('selected_inbound', None)
+            # selected_outbound = session.pop('selected_outbound', None)
+            selected_outbound = session.get('selected_outbound')
+            # selected_inbound = session.pop('selected_inbound', None)
+            selected_inbound = session.get('selected_inbound')
             # return redirect(url_for('purchase'))
             return render_template('customer-purchase.html',
                                    selected_outbound=selected_outbound,
@@ -222,6 +224,12 @@ def purchase():
         else:
             # Customer is logged in and has selected flights
             # Retrieve selected flights from the form or the session
+
+            # These 2 lines made me spend 2 days. Flagging this to chreish my debugging skills later
+            session['selected_outbound'] = request.form.get('selected_outbound')
+            session['selected_inbound'] = request.form.get('selected_inbound')
+            ##
+            session['total_cost'] = request.form['total_cost'] 
             selected_outbound = request.form.get('selected_outbound') or session.get('selected_outbound')
             selected_inbound = request.form.get('selected_inbound') or session.get('selected_inbound')
             total_cost = request.form.get('total_cost') or session.get('total_cost')
@@ -237,22 +245,16 @@ def purchase():
                                    selected_outbound=selected_outbound,
                                    selected_inbound=selected_inbound, total_cost=total_cost)
     else:
-        # GET request: Render the purchase page or redirect as needed
-        # This is where you might redirect to the search page or handle accordingly
+        # session['selected_outbound'] = request.form.get('selected_outbound')
+        # session['selected_inbound'] = request.form.get('selected_inbound')
+        # session['total_cost'] = request.form['total_cost']
+        # selected_outbound = session.get('selected_outbound')
+        # selected_inbound = session.get('selected_inbound')
+        # total_cost = session.get('total_cost')
+        # return render_template('customer-purchase.html', selected_outbound=selected_outbound,
+        #                            selected_inbound=selected_inbound, total_cost=total_cost)
         return render_template('customer-purchase.html')
 
-        
-# def generate_ticket_id(cursor):
-#     while True:
-#         # Generate a random ticket ID
-#         ticket_id = uuid.uuid4().int & (1<<64)-1
-#         # Check if this ticket ID already exists in the database
-#         cursor.execute('SELECT ticketID FROM ticket WHERE ticketID = %s', (ticket_id,))
-#         result = cursor.fetchone()
-#         # If fetchone() does not retrieve any rows, the ticket ID does not exist
-#         if result is None:
-#             return ticket_id
-#         # If result is not None, the while loop will continue and generate a new ticket ID
 
 def generate_ticket_id(cursor):
     max_int = 2147483647  # Maximum value for a signed 4-byte integer
@@ -278,7 +280,11 @@ def purchase_confirmation():
     customer_lname = session['lname'], 
     # customer_dob = session['dob'] having an error with the date format
     selected_outbound = session.pop('selected_outbound', None)
+    # selected_outbound = session.get('selected_outbound')
     selected_inbound = session.pop('selected_inbound', None)
+    # selected_inbound = session.get('selected_inbound')
+
+    print(selected_inbound, selected_outbound)
     # total_cost = session.pop('total_cost', None)
 
     # Process the form data from the customer-purchase page to confirm the purchase
@@ -289,59 +295,66 @@ def purchase_confirmation():
 
     # Generate a unique ticketID
     cursor = conn.cursor()
-    ticketID = generate_ticket_id(cursor)
+    outboundTicketID = generate_ticket_id(cursor)
+    inboundTicketID = generate_ticket_id(cursor) if selected_inbound else None
 
-    # Add a tuple (details) to the purchase table
+    # Add tuples to ticket, purchase & Update flight
     try:
-        purchase_insert_query = '''
-        INSERT INTO purchase 
-        (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time)
-        VALUES 
-        (%s, %s, %s, (SELECT date_of_birth FROM customer WHERE email_id = %s), %s, %s, %s, %s, %s, CURDATE(), CURTIME())
-        '''
-        cursor.execute(purchase_insert_query, 
-                    (ticketID, 
-                        customer_email, 
-                        customer_fname, 
-                        customer_lname, 
-                        customer_email, 
-                        card_type, 
-                        card_number, 
-                        name_on_card, 
-                        expiration_date)
-                        )
-        
-        # Store the ticket details in the ticket table
         if selected_outbound:
-            # Split the concatenated string to get specific details
+            # Add data to ticket table: Insert into ticket table first due to the foreign key references from Purchase to Ticket
             outbound_details = selected_outbound.split('_')
             ticket_insert_query = '''
             INSERT INTO ticket (ticketID, airline_name, flight_num, departure_date, departure_time)
             VALUES (%s, %s, %s, %s, %s)
             '''
-            cursor.execute(ticket_insert_query, (ticketID, outbound_details[1], outbound_details[0], outbound_details[2], outbound_details[3]))
+            cursor.execute(ticket_insert_query, (outboundTicketID, outbound_details[1], outbound_details[0], outbound_details[2], outbound_details[3]))
 
-            # Update the available seats for the outbound flight
-            update_seats_query = '''
-            UPDATE flight SET available_seats = available_seats - 1
-            WHERE airline_name = %s AND flight_num = %s AND departure_date = %s AND departure_time = %s
+            # Add data to purchase table
+            purchase_insert_query = '''
+            INSERT INTO purchase (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time)
+            SELECT %s, %s, first_name, last_name, date_of_birth, %s, %s, %s, %s, CURDATE(), CURTIME()
+            FROM customer WHERE email_id = %s
             '''
+            cursor.execute(purchase_insert_query, 
+                (outboundTicketID, 
+                    customer_email, 
+                    card_type, 
+                    card_number, 
+                    name_on_card, 
+                    expiration_date, 
+                    customer_email))
+            
+            # Update available seats on flight table
+            update_seats_query = 'UPDATE flight SET available_seats = available_seats - 1 WHERE airline_name = %s AND flight_num = %s AND departure_date = %s AND departure_time = %s'
             cursor.execute(update_seats_query, (outbound_details[1], outbound_details[0], outbound_details[2], outbound_details[3]))
-
+            
         if selected_inbound:
+            # Add data to ticket table
             inbound_details = selected_inbound.split('_')
             ticket_insert_query = '''
             INSERT INTO ticket (ticketID, airline_name, flight_num, departure_date, departure_time)
             VALUES (%s, %s, %s, %s, %s)
             '''
-            cursor.execute(ticket_insert_query, (ticketID, inbound_details[1], inbound_details[0], inbound_details[2], inbound_details[3]))
+            cursor.execute(ticket_insert_query, (inboundTicketID, inbound_details[1], inbound_details[0], inbound_details[2], inbound_details[3]))
 
-            # Update the available seats for the inbound flight
-            update_seats_query = '''
-            UPDATE flight SET available_seats = available_seats - 1
-            WHERE airline_name = %s AND flight_num = %s AND departure_date = %s AND departure_time = %s
+            # Add data to purchase table
+            purchase_insert_query_return = '''
+            INSERT INTO purchase (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time)
+            SELECT %s, %s, first_name, last_name, date_of_birth, %s, %s, %s, %s, CURDATE(), CURTIME()
+            FROM customer WHERE email_id = %s
             '''
-            cursor.execute(update_seats_query, (outbound_details[1], outbound_details[0], outbound_details[2], outbound_details[3]))
+            cursor.execute(purchase_insert_query_return, 
+                (inboundTicketID, 
+                    customer_email, 
+                    card_type, 
+                    card_number, 
+                    name_on_card, 
+                    expiration_date, 
+                    customer_email))        
+
+            # Update available seats on flight table
+            update_seats_query = 'UPDATE flight SET available_seats = available_seats - 1 WHERE airline_name = %s AND flight_num = %s AND departure_date = %s AND departure_time = %s'
+            cursor.execute(update_seats_query, (inbound_details[1], inbound_details[0], inbound_details[2], inbound_details[3]))
 
         # Commit the changes to the database
         conn.commit()
@@ -349,6 +362,7 @@ def purchase_confirmation():
     except Exception as e:
          print('Could not proceed with purchase transaction. Aborting.')
          print(e)
+        #  print(ticketID)
          conn.rollback()
          error = "Could not complete the transaction. Aborted."
          return render_template('customer-purchase.html', error=error)
@@ -356,8 +370,9 @@ def purchase_confirmation():
     finally:
         # Ensure cursor is closed regardless
         cursor.close()
+
     # After processing, redirect to a page that confirms the purchase
-    return render_template('customer-purchase-confirmation.html', ticketID=ticketID)
+    return render_template('customer-purchase-confirmation.html', outboundTicketID=outboundTicketID, inboundTicketID=inboundTicketID)
 
 
 		
