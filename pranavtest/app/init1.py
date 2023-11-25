@@ -167,10 +167,11 @@ def LoginAuth():
             selected_outbound = session.get('selected_outbound')
             # selected_inbound = session.pop('selected_inbound', None)
             selected_inbound = session.get('selected_inbound')
+            total_cost = session.get('total_cost')
             # return redirect(url_for('purchase'))
             return render_template('customer-purchase.html',
                                    selected_outbound=selected_outbound,
-                                   selected_inbound=selected_inbound)
+                                   selected_inbound=selected_inbound, total_cost=total_cost)
         else:
             # If not, redirect to the customer's home page
             return redirect(url_for('customerHome'))
@@ -200,7 +201,8 @@ def customerHome():
         else:
             #if customer logs in after selecting flights
             if 'selected_outbound' in session or 'selected_inbound' in session:
-                return redirect(url_for('purchase'))
+                # return redirect(url_for('purchase'))
+                return render_template('customer-home.html', fname = session['fname'])
             #session active - so pass the fname and other variables as necessary
             return render_template('customer-home.html', fname = session['fname'])
 
