@@ -44,7 +44,8 @@
                 <th>Destination</th>
                 <th>Departure Date</th>
                 <th>Departure Time</th>
-                <th>Price</th>
+                <!-- <th>Price</th> -->
+                <th>Final Price (Dynamic)</th>
                 <th>Select</th>
 
             </tr>
@@ -56,8 +57,9 @@
                 <td>{{ flight['arrival_airport'] }}</td>
                 <td>{{ flight['departure_date'] }}</td>
                 <td>{{ flight['departure_time'] }}</td>
-                <td>{{ flight['base_price_ticket'] }}</td>
-                <td><input type="radio" name="selected_outbound" value="{{ flight['flight_num'] }}_{{ flight['airline_name'] }}_{{ flight['departure_date'] }}_{{ flight['departure_time'] }}" data-price = "{{ flight['base_price_ticket'] }}"></td> <!-- Concatenation of strings since it's a weak entity and there are 4 primary keys -->
+                <!-- <td>{{ flight['base_price_ticket'] }}</td> -->
+                <td>{{ flight['dynamic_price'] }}</td>
+                <td><input type="radio" name="selected_outbound" value="{{ flight['flight_num'] }}_{{ flight['airline_name'] }}_{{ flight['departure_date'] }}_{{ flight['departure_time'] }}" data-price = "{{ flight['dynamic_price'] }}"></td> <!-- Concatenation of strings since it's a weak entity and there are 4 primary keys -->
             </tr>
             {% endfor %}
         </table>
@@ -75,7 +77,8 @@
                 <th>Destination</th>
                 <th>Departure Date</th>
                 <th>Departure Time</th>
-                <th>Price</th>
+                <!-- <th>Price</th> -->
+                <th>Final Price (Dynamic)</th>
                 <th>Select</th>
             </tr>
             {% for flight in inbound_flights %}
@@ -86,8 +89,9 @@
                 <td>{{ flight['arrival_airport'] }}</td>
                 <td>{{ flight['departure_date'] }}</td>
                 <td>{{ flight['departure_time'] }}</td>
-                <td>{{ flight['base_price_ticket'] }}</td>
-                <td><input type="radio" name="selected_inbound" value="{{ flight['flight_num'] }}_{{ flight['airline_name'] }}_{{ flight['departure_date'] }}_{{ flight['departure_time'] }}" data-price = "{{ flight['base_price_ticket'] }}"></td> <!-- Concatenation of strings since it's a weak entity and there are 4 primary keys -->
+                <!-- <td>{{ flight['base_price_ticket'] }}</td> -->
+                <td>{{ flight['dynamic_price'] }}</td>
+                <td><input type="radio" name="selected_inbound" value="{{ flight['flight_num'] }}_{{ flight['airline_name'] }}_{{ flight['departure_date'] }}_{{ flight['departure_time'] }}" data-price = "{{ flight['dynamic_price'] }}"></td> <!-- Concatenation of strings since it's a weak entity and there are 4 primary keys -->
             </tr>
             {% endfor %}
         </table>

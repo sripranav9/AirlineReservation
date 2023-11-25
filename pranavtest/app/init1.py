@@ -53,19 +53,31 @@ def search_flights():
 
         # SQL Query the database
         cursor = conn.cursor()
-        cursor.execute(
-            'SELECT * FROM flight WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s',
-            (origin_code, destination_code, departure_date)
-        )
+        # cursor.execute(
+        #     'SELECT * FROM flight WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s',
+        #     (origin_code, destination_code, departure_date)
+        # )
+        cursor.execute('''
+        SELECT *,
+        base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS dynamic_price
+        FROM flight
+        WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s
+		''', (origin_code, destination_code, departure_date))
         outbound_flights = cursor.fetchall()
 
-        #Initialise an empty list for inbound flights
+        # Initialise an empty list for inbound flights
         # If round-trip, query the database for inbound flights
         if trip_type == 'round-trip' and return_date:
-            cursor.execute(
-                'SELECT * FROM flight WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s',
-                (destination_code, origin_code, return_date)
-            )
+            # cursor.execute(
+            #     'SELECT * FROM flight WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s',
+            #     (destination_code, origin_code, return_date)
+            # )
+            cursor.execute('''
+                SELECT *,
+                base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS dynamic_price
+                FROM flight
+                WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s
+                ''', (destination_code, origin_code, return_date))
         inbound_flights = cursor.fetchall()
 
         cursor.close()
@@ -210,6 +222,18 @@ def customerHome():
 def logout():
     session.clear()
     return redirect(url_for('customer_login'))
+
+# Calculate the final ticket price based on demand
+def calculate_final_price(base_price, total_seats, available_seats):
+    booked_percentage = ((total_seats - available_seats) / total_seats) * 100
+    if booked_percentage >= 80:
+        return base_price * 1.25  # Increase price by 25%
+    else:
+        return base_price
+
+# Inside your purchase confirmation route, before inserting into the purchase table
+# final_price = calculate_final_price(base_price, total_seats, available_seats)
+
 
 @app.route('/customer-purchase', methods=['GET', 'POST'])
 def purchase():
