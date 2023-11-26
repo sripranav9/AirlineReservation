@@ -12,7 +12,7 @@
 	<a href="staff_home">Go back</a> </br>
 	<h1>Flight Ratings</h1>
 	<div>
-	<h3> Flights in last 30 days </h3>
+	<h3> Flight for Reviews </h3>
 	<table>
 		<th>Airline Name</th>
 		<th>Departure Aiport</th>
@@ -24,21 +24,43 @@
 		<th>Arrival Time</th>
 		<th>Base Price Ticket</th>
 		<th>Flight Status</th>
-	{% for fli in flight %}
 		<tr>
-			<td>{{fli['airline_name']}}</td>
-			<td>{{fli['departure_airport']}}</td>
-			<td>{{fli['arrival_airport']}}</td>
+			<td>{{flight['airline_name']}}</td>
+			<td>{{flight['departure_airport']}}</td>
+			<td>{{flight['arrival_airport']}}</td>
 			<td><a href="/see_customers?param1={{flight['flight_num']}}&param2={{ flight['airline_name']}}&param3={{flight['departure_date']}}&param4={{ flight['departure_time']}}">{{flight['flight_num']}}</a></td>
-			<td>{{fli['departure_date']}}</td>
-			<td>{{fli['departure_time']}}</td>
-			<td>{{fli['arrival_date']}}</td>
-			<td>{{fli['arrival_time']}}</td>
-			<td>{{fli['base_price_ticket']}}</td>
+			<td>{{flight['departure_date']}}</td>
+			<td>{{flight['departure_time']}}</td>
+			<td>{{flight['arrival_date']}}</td>
+			<td>{{flight['arrival_time']}}</td>
+			<td>{{flight['base_price_ticket']}}</td>
 			<td><a href="/change_status?param1={{flight['flight_num']}}&param2={{ flight['airline_name']}}&param3={{flight['departure_date']}}&param4={{ flight['departure_time']}}">{{flight['flight_status']}}</a></td>
 		</tr>
-	{% endfor %}
 	</table>
+	<br/><hr><br/>
+
+	<h3> Reviews for flight </h3>
+	<table>
+		<th>Ticket ID</th>
+		<th>Email Address</th>
+		<th>Rating</th>
+		<th>Comment</th>
+		{% for review in reviews %}
+		<tr>
+			<td>{{review['ticketID']}}</td>
+			<td>{{review['email_id']}}</td>
+			<td>{{review['rate']}}</td>
+			<td>{{review['comment']}}</td>
+		</tr>
+		{% endfor %}
+		<tr>
+			<td><b>Average Rating<b></td>
+			<td></td>
+			<td><b>{{avgReview['avgRate']}}<b></td>
+			<td></td>
+		</tr>
+	</table>
+
 	</div>
 </body>
 

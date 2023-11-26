@@ -12,7 +12,18 @@
 	<a href="staff_home">Go back</a> </br>
 	<h1>View Flights</h1>
 	<div>
-	<h3> Flights in last 30 days </h3>
+
+	<form action="/viewFlights" method="POST">
+		<h4>Search for flights</h4>
+
+		<input type="text" name = "airline_name" placeholder="Airline Name" />
+		<input type="text" name = "flight_num" placeholder="Flight Number" />
+		  Departure Date: <input type="date" name = "departure_date" placeholder="Departure Date" /> 
+		  Departure Time: <input type="time" name = "departure_time" placeholder="Departure Time" />
+		<input type="Submit" value = "Search for Flights"/> </br>
+
+	</form>
+	<h3> {{message}} </h3>
 	<table>
 		<th>Airline Name</th>
 		<th>Departure Aiport</th>
@@ -24,6 +35,7 @@
 		<th>Arrival Time</th>
 		<th>Base Price Ticket</th>
 		<th>Flight Status</th>
+		<th>Reviews</th>
 	{% for flight in outBoundFlights %}
 		<tr>
 			<td>{{flight['airline_name']}}</td>
@@ -36,6 +48,8 @@
 			<td>{{flight['arrival_time']}}</td>
 			<td>{{flight['base_price_ticket']}}</td>
 			<td><a href="/change_status?param1={{flight['flight_num']}}&param2={{ flight['airline_name']}}&param3={{flight['departure_date']}}&param4={{ flight['departure_time']}}">{{flight['flight_status']}}</a></td>
+			<td><a href="/view_reviews?param1={{flight['flight_num']}}&param2={{ flight['airline_name']}}&param3={{flight['departure_date']}}&param4={{ flight['departure_time']}}">{{flight['review']}}</a></td>
+	
 		</tr>
 	{% endfor %}
 	</table>
