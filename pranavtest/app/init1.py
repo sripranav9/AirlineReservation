@@ -297,6 +297,9 @@ def purchase_confirmation():
     selected_inbound = session.pop('selected_inbound', None)
     # selected_inbound = session.get('selected_inbound')
 
+    # Remember the total cost calculated by JavaScript in searchresults.html
+    total_cost = session.get('total_cost')
+
     print(selected_inbound, selected_outbound)
     # total_cost = session.pop('total_cost', None)
 
@@ -324,8 +327,8 @@ def purchase_confirmation():
 
             # Add data to purchase table
             purchase_insert_query = '''
-            INSERT INTO purchase (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time)
-            SELECT %s, %s, first_name, last_name, date_of_birth, %s, %s, %s, %s, CURDATE(), CURTIME()
+            INSERT INTO purchase (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time, amount_paid)
+            SELECT %s, %s, first_name, last_name, date_of_birth, %s, %s, %s, %s, CURDATE(), CURTIME(), %s
             FROM customer WHERE email_id = %s
             '''
             cursor.execute(purchase_insert_query, 
@@ -334,7 +337,8 @@ def purchase_confirmation():
                     card_type, 
                     card_number, 
                     name_on_card, 
-                    expiration_date, 
+                    expiration_date,
+                    total_cost, 
                     customer_email))
             
             # Update available seats on flight table
@@ -352,8 +356,8 @@ def purchase_confirmation():
 
             # Add data to purchase table
             purchase_insert_query_return = '''
-            INSERT INTO purchase (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time)
-            SELECT %s, %s, first_name, last_name, date_of_birth, %s, %s, %s, %s, CURDATE(), CURTIME()
+            INSERT INTO purchase (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time, amount_paid)
+            SELECT %s, %s, first_name, last_name, date_of_birth, %s, %s, %s, %s, CURDATE(), CURTIME(), %s
             FROM customer WHERE email_id = %s
             '''
             cursor.execute(purchase_insert_query_return, 
@@ -362,7 +366,8 @@ def purchase_confirmation():
                     card_type, 
                     card_number, 
                     name_on_card, 
-                    expiration_date, 
+                    expiration_date,
+                    total_cost, 
                     customer_email))        
 
             # Update available seats on flight table
