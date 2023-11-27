@@ -60,7 +60,7 @@ def search_flights():
         # Query for fetching all the details + dynamic price from flight table
         cursor.execute('''
         SELECT *,
-        base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS dynamic_price
+        CAST(base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS DECIMAL(10,2)) AS dynamic_price
         FROM flight
         WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s
 		''', (origin_code, destination_code, departure_date))
@@ -76,7 +76,7 @@ def search_flights():
             # Query for fetching all the details + dynamic price from flight table
             cursor.execute('''
                 SELECT *,
-                base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS dynamic_price
+                CAST(base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS DECIMAL (10,2)) AS dynamic_price
                 FROM flight
                 WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s
                 ''', (destination_code, origin_code, return_date))

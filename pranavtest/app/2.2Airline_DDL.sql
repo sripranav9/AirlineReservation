@@ -152,3 +152,5 @@ create table purchase
 	 foreign key(ticketID) references ticket(ticketID),
 	 foreign key(email_id) references customer(email_id)
 	);
+
+ALTER TABLE purchase ADD COLUMN amount_paid DECIMAL(10, 2); -- Added this to capture final sold price as well
