@@ -250,6 +250,38 @@ def purchase():
             selected_outbound = request.form.get('selected_outbound') or session.get('selected_outbound')
             selected_inbound = request.form.get('selected_inbound') or session.get('selected_inbound')
             total_cost = request.form.get('total_cost') or session.get('total_cost')
+
+            cursor = conn.cursor()
+            details_selected_outbound = None
+            details_selected_inbound = None # This is to ensure a successful build and run, since inbound is not always present
+            
+            # Format: EK201_Emirates_2023-11-07_15:00:00
+            outbound_details = selected_outbound.split('_')
+        
+            details_selected_outbound_query = '''
+            SELECT *,
+            CAST(base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS DECIMAL(10,2)) AS dynamic_price
+            FROM flight
+            WHERE airline_name = %s AND flight_num = %s AND departure_date = %s AND departure_time = %s
+            AND available_seats > 0 AND flight_status != 'canceled'
+            '''
+            cursor.execute(details_selected_outbound_query, (outbound_details[1], 
+                                                 outbound_details[0], outbound_details[2], outbound_details[3]))
+            details_selected_outbound = cursor.fetchall() # To be passed on to the HTML to display
+            
+            if selected_inbound:
+                inbound_details = selected_inbound.split('_')
+                details_selected_inbound_query = '''
+                SELECT *,
+                CAST(base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS DECIMAL(10,2)) AS dynamic_price
+                FROM flight
+                WHERE airline_name = %s AND flight_num = %s AND departure_date = %s AND departure_time = %s
+                AND available_seats > 0 AND flight_status != 'canceled'
+                '''
+                cursor.execute(details_selected_inbound_query, (inbound_details[1], 
+                                                    inbound_details[0], inbound_details[2], inbound_details[3]))            
+                details_selected_inbound = cursor.fetchall() # To be passed on to the HTML to display
+
             
             # Clear the flights from the session if they were stored
             # session.pop('selected_outbound', None)
@@ -257,19 +289,14 @@ def purchase():
             # session.pop('total_cost', None)
             # Commented because - using these in customer-purchase-confirmation
             
+            cursor.close()
             # Render the purchase page with the selected flights
             return render_template('customer-purchase.html', 
                                    selected_outbound=selected_outbound,
-                                   selected_inbound=selected_inbound, total_cost=total_cost)
+                                   selected_inbound=selected_inbound, total_cost=total_cost,
+                                   details_selected_inbound=details_selected_inbound,
+                                   details_selected_outbound=details_selected_outbound)
     else:
-        # session['selected_outbound'] = request.form.get('selected_outbound')
-        # session['selected_inbound'] = request.form.get('selected_inbound')
-        # session['total_cost'] = request.form['total_cost']
-        # selected_outbound = session.get('selected_outbound')
-        # selected_inbound = session.get('selected_inbound')
-        # total_cost = session.get('total_cost')
-        # return render_template('customer-purchase.html', selected_outbound=selected_outbound,
-        #                            selected_inbound=selected_inbound, total_cost=total_cost)
         return render_template('customer-purchase.html')
 
 
@@ -320,7 +347,7 @@ def purchase_confirmation():
     try:
         if selected_outbound:
             # Add data to ticket table: Insert into ticket table first due to the foreign key references from Purchase to Ticket
-            outbound_details = selected_outbound.split('_')
+            outbound_details = selected_outbound.split('_') # Split the concatenated data from HTML/JS
             ticket_insert_query = '''
             INSERT INTO ticket (ticketID, airline_name, flight_num, departure_date, departure_time)
             VALUES (%s, %s, %s, %s, %s)
