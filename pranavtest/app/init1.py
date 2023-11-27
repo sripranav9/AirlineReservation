@@ -62,7 +62,8 @@ def search_flights():
         SELECT *,
         CAST(base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS DECIMAL(10,2)) AS dynamic_price
         FROM flight
-        WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s
+        WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s 
+        AND available_seats > 0 AND flight_status != 'canceled'
 		''', (origin_code, destination_code, departure_date))
         outbound_flights = cursor.fetchall()
 
@@ -79,6 +80,7 @@ def search_flights():
                 CAST(base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS DECIMAL (10,2)) AS dynamic_price
                 FROM flight
                 WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s
+                AND available_seats > 0 AND flight_status != 'canceled'
                 ''', (destination_code, origin_code, return_date))
         inbound_flights = cursor.fetchall()
 
