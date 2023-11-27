@@ -56,3 +56,5 @@ INSERT INTO staff_phone VALUES ("ss14741", "+12234356545");
 -- Staff_Email inserts
 INSERT INTO staff_email VALUES ("tlw9927", "tlw9927@nyu.edu");
 INSERT INTO staff_email VALUES ("ss14741", "ss14741@nyu.edu");
+
+ALTER TABLE purchase ADD COLUMN amount_paid DECIMAL(10, 2); -- Added this to capture final sold price as well.
