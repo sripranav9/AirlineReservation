@@ -234,6 +234,9 @@ def purchase():
             session['selected_outbound'] = request.form.get('selected_outbound')
             session['selected_inbound'] = request.form.get('selected_inbound')
             session['total_cost'] = request.form['total_cost'] 
+            session['outbound_cost'] = request.form['outbound_cost'] 
+            session['inbound_cost'] = request.form['inbound_cost'] 
+            # print(session['outbound_cost'], session['inbound_cost'], session['total_cost']) # Debugging purpose
             # Set a flag to indicate a purchase attempt
             session['attempting_purchase'] = True
             # Redirect to login page
@@ -247,6 +250,10 @@ def purchase():
             session['selected_inbound'] = request.form.get('selected_inbound')
             ##
             session['total_cost'] = request.form['total_cost'] 
+            session['outbound_cost'] = request.form['outbound_cost'] 
+            session['inbound_cost'] = request.form['inbound_cost'] 
+            # print(session['outbound_cost'], session['inbound_cost'], session['total_cost']) # Debugging purpose
+
             selected_outbound = request.form.get('selected_outbound') or session.get('selected_outbound')
             selected_inbound = request.form.get('selected_inbound') or session.get('selected_inbound')
             total_cost = request.form.get('total_cost') or session.get('total_cost')
@@ -328,6 +335,8 @@ def purchase_confirmation():
 
     # Remember the total cost calculated by JavaScript in searchresults.html
     total_cost = session.get('total_cost')
+    outbound_cost = session.get('outbound_cost')
+    inbound_cost = session.get('inbound_cost')
 
     print(selected_inbound, selected_outbound)
     # total_cost = session.pop('total_cost', None)
@@ -367,7 +376,7 @@ def purchase_confirmation():
                     card_number, 
                     name_on_card, 
                     expiration_date,
-                    total_cost, 
+                    outbound_cost, 
                     customer_email))
             
             # Update available seats on flight table
@@ -396,7 +405,7 @@ def purchase_confirmation():
                     card_number, 
                     name_on_card, 
                     expiration_date,
-                    total_cost, 
+                    inbound_cost, 
                     customer_email))        
 
             # Update available seats on flight table
@@ -426,8 +435,10 @@ def customer_spending():
         # The user is not logged in, redirect them to the login page
         return redirect(url_for('customer_login'))
     
-    customer_email = session['email']
+    customer_email = session['email'] # To load the customer data accordingly
     cursor = conn.cursor()
+
+    # Query to get the Purchase History and connected Ticket data
     spending_history_query = '''
             SELECT p.ticketID, p.amount_paid, p.purchase_date, p.purchase_time, 
             t.airline_name, t.flight_num ,t.departure_date, t.departure_time 
@@ -438,6 +449,7 @@ def customer_spending():
     cursor.execute(spending_history_query, (customer_email))
     spending_history_data = cursor.fetchall()
 
+    # Query to get the total amount spent by the customer in session
     total_spent_query = 'SELECT SUM(amount_paid) AS total_amount FROM `purchase` WHERE email_id = %s'
     cursor.execute(total_spent_query, (customer_email))
     total_spent_amount = cursor.fetchone()

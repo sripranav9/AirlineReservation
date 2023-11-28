@@ -15,11 +15,23 @@
                 var inboundSelection = document.querySelector('input[name="selected_inbound"]:checked');
         
                 var totalCost = 0;
-                if (outboundSelection) totalCost += parseFloat(outboundSelection.getAttribute('data-price'));
-                if (inboundSelection) totalCost += parseFloat(inboundSelection.getAttribute('data-price'));
+                var outboundCost = 0;
+                var inboundCost = 0;
+                
+                // Keep track of outbound and inbound costs separately, along with the total cost
+                if (outboundSelection) {
+                    outboundCost = parseFloat(outboundSelection.getAttribute('data-price'));
+                    totalCost += outboundCost;
+                }
+                if (inboundSelection) {
+                    inboundCost = parseFloat(inboundSelection.getAttribute('data-price'));
+                    totalCost += inboundCost;
+                }
         
                 document.getElementById('total-cost').textContent = 'Total Cost: $' + totalCost.toFixed(2);
-                document.getElementById('total_cost_hidden').value = totalCost.toFixed(2); //to carry over the price to customer-purchase page
+                document.getElementById('total_cost_hidden').value = totalCost.toFixed(2);
+                document.getElementById('outbound_cost_hidden').value = outboundCost.toFixed(2);
+                document.getElementById('inbound_cost_hidden').value = inboundCost.toFixed(2);
             });
         });
     </script>
@@ -109,7 +121,11 @@
         <!-- A total view and submit button to submit the selected flights - next page -->
         <div>
             <span id="total-cost">Total Cost: $0</span>
+            <!-- Added hidden fields to keep track of the values of the costs -->
             <input type="hidden" id="total_cost_hidden" name="total_cost" value="0">
+            <input type="hidden" id="outbound_cost_hidden" name="outbound_cost" value="0">
+            <input type="hidden" id="inbound_cost_hidden" name="inbound_cost" value="0">
+            
             <input type="submit" value="Confim Selection">
         </div>
     </form>
