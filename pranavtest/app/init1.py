@@ -420,13 +420,33 @@ def purchase_confirmation():
     # After processing, redirect to a page that confirms the purchase
     return render_template('customer-purchase-confirmation.html', outboundTicketID=outboundTicketID, inboundTicketID=inboundTicketID)
 
-@app.route('/customer-track-spending', methods=['GET','POST'])
-def customer_track_spending():
+@app.route('/customer-spending', methods=['GET','POST'])
+def customer_spending():
     if(isNotValidCustomer()):
         # The user is not logged in, redirect them to the login page
         return redirect(url_for('customer_login'))
-    cursor = conn.cursor()
     
+    customer_email = session['email']
+    cursor = conn.cursor()
+    spending_history_query = '''
+            SELECT p.ticketID, p.amount_paid, p.purchase_date, p.purchase_time, 
+            t.airline_name, t.flight_num ,t.departure_date, t.departure_time 
+            FROM `purchase` as p ,`ticket` as t 
+            WHERE t.ticketID = p.ticketID AND p.email_id = %s
+            ORDER BY purchase_date DESC, purchase_time DESC;
+            '''
+    cursor.execute(spending_history_query, (customer_email))
+    spending_history_data = cursor.fetchall()
+
+    total_spent_query = 'SELECT SUM(amount_paid) AS total_amount FROM `purchase` WHERE email_id = %s'
+    cursor.execute(total_spent_query, (customer_email))
+    total_spent_amount = cursor.fetchone()
+
+    cursor.close()
+    
+    return render_template('customer-spending.html', spending_history_data=spending_history_data,
+                           total_spent_amount=total_spent_amount['total_amount'] )
+
 		
 app.secret_key = 'some key that you will never guess'
 # app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
