@@ -420,7 +420,13 @@ def purchase_confirmation():
     # After processing, redirect to a page that confirms the purchase
     return render_template('customer-purchase-confirmation.html', outboundTicketID=outboundTicketID, inboundTicketID=inboundTicketID)
 
-
+@app.route('/customer-track-spending', methods=['GET','POST'])
+def customer_track_spending():
+    if(isNotValidCustomer()):
+        # The user is not logged in, redirect them to the login page
+        return redirect(url_for('customer_login'))
+    cursor = conn.cursor()
+    
 		
 app.secret_key = 'some key that you will never guess'
 # app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
