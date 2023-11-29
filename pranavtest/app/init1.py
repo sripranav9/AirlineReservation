@@ -183,9 +183,47 @@ def LoginAuth():
             selected_inbound = session.get('selected_inbound')
             total_cost = session.get('total_cost')
             # return redirect(url_for('purchase'))
+            ######
+            # Since I want the flight details in a table, I need to execute those queries again here.
+            # Copy Pasted from the customer-purchase function
+            cursor = conn.cursor()
+            details_selected_outbound = None
+            details_selected_inbound = None # This is to ensure a successful build and run, since inbound is not always present
+            
+            outbound_details = selected_outbound.split('_')
+        
+            details_selected_outbound_query = '''
+            SELECT *,
+            CAST(base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS DECIMAL(10,2)) AS dynamic_price
+            FROM flight
+            WHERE airline_name = %s AND flight_num = %s AND departure_date = %s AND departure_time = %s
+            AND available_seats > 0 AND flight_status != 'canceled'
+            '''
+            cursor.execute(details_selected_outbound_query, (outbound_details[1], 
+                                                 outbound_details[0], outbound_details[2], outbound_details[3]))
+            details_selected_outbound = cursor.fetchall() # To be passed on to the HTML to display
+            
+            if selected_inbound:
+                inbound_details = selected_inbound.split('_')
+                details_selected_inbound_query = '''
+                SELECT *,
+                CAST(base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS DECIMAL(10,2)) AS dynamic_price
+                FROM flight
+                WHERE airline_name = %s AND flight_num = %s AND departure_date = %s AND departure_time = %s
+                AND available_seats > 0 AND flight_status != 'canceled'
+                '''
+                cursor.execute(details_selected_inbound_query, (inbound_details[1], 
+                                                    inbound_details[0], inbound_details[2], inbound_details[3]))            
+                details_selected_inbound = cursor.fetchall() # To be passed on to the HTML to display
+            
+            cursor.close()
+            # Paste from the Customer Purchase ends
+            ######
             return render_template('customer-purchase.html',
                                    selected_outbound=selected_outbound,
-                                   selected_inbound=selected_inbound, total_cost=total_cost)
+                                   selected_inbound=selected_inbound, total_cost=total_cost,
+                                   details_selected_outbound=details_selected_outbound,
+                                  details_selected_inbound=details_selected_inbound)
         else:
             # If not, redirect to the customer's home page
             return redirect(url_for('customerHome'))
