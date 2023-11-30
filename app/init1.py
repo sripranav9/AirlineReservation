@@ -585,6 +585,14 @@ def scheduleMaintenance():
 		message = 'Successfully scheduled maintenance for given airplane'
 		return render_template('schedule_maintenance.html', message = message)
 
+@app.route('/view_frequent_customers', methods=['GET', 'POST'])
+def view_frequent_customers():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+	
+	cursor = conn.cursor()
+
+	return render_template('schedule_maintenance.html')
 
 
 ##################################################

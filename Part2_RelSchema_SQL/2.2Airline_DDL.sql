@@ -71,8 +71,10 @@ create table flight
 	 departure_time					time,
 	 arrival_date					date,
 	 arrival_time					time,
-	 base_price_ticket				decimal,
+	 base_price_ticket				decimal (10,2),
 	 flight_status					varchar(8) CHECK (flight_status IN ('on_time', 'delayed', 'canceled')),
+	 -- total_seats					int, -- Added while doing Part 3
+	 available_seats				int, -- Added while doing Part 3
 
 	 primary key(airline_name, flight_num, departure_date, departure_time),
 	 foreign key(airline_name) references airline(airline_name),
@@ -127,7 +129,8 @@ create table review
 	 comment			varchar(500),
 
 	 primary key(ticketID),
-	 foreign key(ticketID) references ticket(ticketID)
+	 foreign key(ticketID) references ticket(ticketID),
+	 foreign key(email_id) references customer(email_id)
 	);
 
 create table purchase
@@ -142,6 +145,7 @@ create table purchase
 	 expiration_date		date,
 	 purchase_date			date,
 	 purchase_time			time,
+	 amount_paid			decimal(10,2),
 	 primary key(ticketID),
 	 foreign key(ticketID) references ticket(ticketID),
 	 foreign key(email_id) references customer(email_id)

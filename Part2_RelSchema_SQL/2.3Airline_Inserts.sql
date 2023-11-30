@@ -45,9 +45,9 @@ INSERT INTO customer_phone VALUES ('john.doe@example.com', '+11234567890');
 INSERT INTO customer_phone VALUES ('jane.smith@example.com', '+12345678902');
 
 -- Purchase inserts
-INSERT INTO purchase VALUES (10001, 'john.doe@example.com', 'John', 'Doe', '1980-06-15', 'credit', 1234567890123456, 'John Doe', '2025-12-31', '2023-11-05', '10:30:00');
-INSERT INTO purchase VALUES (10002, 'jane.smith@example.com', 'Jane', 'Smith', '1985-10-22', 'debit', 2345678901234567, 'Jane Smith', '2026-11-30', '2023-11-05', '14:45:00');
-INSERT INTO purchase VALUES (10003, 'alice.brown@example.com', 'Alice', 'Brown', '1990-03-30', 'credit', 3456789012345678, 'Alice Brown', '2027-10-15', '2023-11-06', '16:20:00');
+INSERT INTO purchase VALUES (10001, 'john.doe@example.com', 'John', 'Doe', '1980-06-15', 'credit', 1234567890123456, 'John Doe', '2025-12-31', '2023-11-05', '10:30:00', 1245.20);
+INSERT INTO purchase VALUES (10002, 'jane.smith@example.com', 'Jane', 'Smith', '1985-10-22', 'debit', 2345678901234567, 'Jane Smith', '2026-11-30', '2023-11-05', '14:45:00', 100.30);
+INSERT INTO purchase VALUES (10003, 'alice.brown@example.com', 'Alice', 'Brown', '1990-03-30', 'credit', 3456789012345678, 'Alice Brown', '2027-10-15', '2023-11-06', '16:20:00', 500);
 
 -- Staff_Phone inserts
 INSERT INTO staff_phone VALUES ("tlw9927", "+19234454356");
