@@ -11,7 +11,7 @@ app = Flask(__name__)
 conn = pymysql.connect(host='localhost',
                        user='root',
                        password='',
-                       db='airline_DDB2',
+                       db='airline_DDB3',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
@@ -111,7 +111,7 @@ def registerStaff():
 def login_airline_staff():
 	return render_template('login_airline_staff.html')
 
-@app.route('/loginAuth', methods=['GET', 'POST'])
+@app.route('/loginStaff', methods=['GET', 'POST'])
 def loginStaff():
 
 	#grabs information from the forms
@@ -188,28 +188,38 @@ def viewFlights():
 		return redirect(url_for('login_airline_staff'))
 
 	cursor = conn.cursor()
-	airline_name = request.form.get('airline_name')
 	flight_num = request.form.get('flight_num')
-	departure_date = request.form.get('departure_date')
-	departure_time = request.form.get('departure_time')
+	start_date = request.form.get('start_date')
+	end_date = request.form.get('end_date')
+	departure_airport = request.form.get('departure_airport')
+	arrival_airport = request.form.get('arrival_airport')
 
 	search_flight_query = "SELECT * FROM flight WHERE "
 	conditions = []
 	query_conditions = []
 
-	if airline_name:
-		conditions.append("airline_name = %s")
-		query_conditions.append(airline_name)
 	if flight_num:
 		conditions.append("flight_num = %s")
 		query_conditions.append(flight_num)
-	if departure_date:
-		conditions.append("departure_date = %s")
-		query_conditions.append(departure_date)
-	if departure_time:
-		conditions.append("departure_time = %s")
-		query_conditions.append(departure_time)
+	if start_date and end_date:
+		conditions.append("departure_date BETWEEN %s AND %s")
+		query_conditions.append(start_date)
+		query_conditions.append(end_date)
+	elif start_date:
+		conditions.append("departure_date >= %s")
+		query_conditions.append(start_date)
+	elif end_date:
+		conditions.append("departure_date <= %s")
+		query_conditions.append(end_date)
+	if(departure_airport):
+		conditions.append("departure_airport = %s")
+		query_conditions.append(departure_airport)
+	if(arrival_airport):
+		conditions.append("arrival_airport = %s")
+		query_conditions.append(arrival_airport)
 
+	conditions.append("airline_name = %s")
+	query_conditions.append(session['airline'])
 
 	if conditions:
 		search_flight_query += " AND ".join(conditions)
@@ -389,8 +399,12 @@ def createNewFlight():
 	else:
 		base_price = request.form['base_price_ticket']
 		selected_status = request.form['status'];
-		insert_flight_query = 'INSERT INTO flight VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-		cursor.execute(insert_flight_query, (session['airline'], departure_airport, arrival_airport, assigned_airplane_airline, airplane_ID, flight_num, departure_date, departure_time, arrival_date, arrival_time, base_price, selected_status))
+		total_seats_query = 'SELECT num_of_seats from airplane where airline_name = %s and airplaneID = %s'
+		cursor.execute(total_seats_query, (assigned_airplane_airline, airplane_ID))
+		total_seats = cursor.fetchone();
+		print(total_seats)
+		insert_flight_query = 'INSERT INTO flight VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+		cursor.execute(insert_flight_query, (session['airline'], departure_airport, arrival_airport, assigned_airplane_airline, airplane_ID, flight_num, departure_date, departure_time, arrival_date, arrival_time, base_price, selected_status, total_seats['num_of_seats'], total_seats['num_of_seats']))
 
 		##If I want to create tickets for each flight created I do it here
 
@@ -447,7 +461,9 @@ def view_airplanes():
 	airplanes = cursor.fetchall();
 	cursor.close()
 
-	return render_template('view_airplanes.html', airplanes = airplanes)
+	message = "Successfully Created New Airplane"
+
+	return render_template('view_airplanes.html', airplanes = airplanes, message = message)
 
 
 @app.route('/create_new_airport', methods=['GET', 'POST'])
@@ -577,13 +593,39 @@ def scheduleMaintenance():
 		error = 'This Airplane does not Exist'
 		cursor.close();
 		return render_template('schedule_maintenance.html', error = error)
-	else:
-		maintenance_insert_query = 'INSERT INTO maintenance VALUES (%s, %s, %s, %s, %s, %s)'
-		cursor.execute(maintenance_insert_query, (airlineName, airplaneID, request.form['start_date'], request.form['start_time'], request.form['end_date'], request.form['end_time']))
-		conn.commit();
-		cursor.close();
-		message = 'Successfully scheduled maintenance for given airplane'
-		return render_template('schedule_maintenance.html', message = message)
+	
+	flight_check_query = 'SELECT * from flight where assigned_airplaneID = %s and assigned_airplane_airline = %s'
+	cursor.execute(flight_check_query, (airplaneID, airlineName))
+	flights = cursor.fetchall()
+
+	for flight in flights:
+		print(type(str(flight['arrival_date'])))
+		arrival_date_NonStr = datetime.strptime(str(flight['arrival_date']), "%Y-%m-%d").date()
+		departure_date_NonStr = datetime.strptime(str(flight['departure_date']), "%Y-%m-%d").date()
+		arrival_time_NonStr = datetime.strptime(str(flight['arrival_time']), '%H:%M:%S').time()
+		departure_time_nonStr = datetime.strptime(str(flight['departure_time']), '%H:%M:%S').time()
+
+		#returns true if the maintancence and flight overlap
+		st_date = request.form['start_date']
+		end_date = request.form['end_date']
+		st_time = str(request.form['start_time'])
+		end_time = str(request.form['end_time'])
+		maintenance_start_time = datetime.strptime(st_time, '%H:%M').time()
+		maintenance_end_time = datetime.strptime(end_time, '%H:%M').time()
+		maintenance_start_date = datetime.strptime(st_date, "%Y-%m-%d").date()
+		maintenance_end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+
+		if  (arrival_date_NonStr, arrival_time_NonStr) >= (maintenance_start_date, maintenance_start_time) and (departure_date_NonStr, departure_time_nonStr) <= (maintenance_end_date, maintenance_end_time):
+			error = "Maintenance interferes with scheduled flight and therefore can not be created"
+			cursor.close()
+			return render_template('schedule_maintenance.html', error = error)
+
+	maintenance_insert_query = 'INSERT INTO maintenance VALUES (%s, %s, %s, %s, %s, %s)'
+	cursor.execute(maintenance_insert_query, (airlineName, airplaneID, request.form['start_date'], request.form['start_time'], request.form['end_date'], request.form['end_time']))
+	conn.commit();
+	cursor.close();
+	message = 'Successfully scheduled maintenance for given airplane'
+	return render_template('schedule_maintenance.html', message = message)
 
 @app.route('/view_frequent_customers', methods=['GET', 'POST'])
 def view_frequent_customers():
@@ -591,10 +633,62 @@ def view_frequent_customers():
 		return redirect(url_for('login_airline_staff'))
 	
 	cursor = conn.cursor()
+	most_frequent_query = 'SELECT email_id, first_name, last_name, date_of_birth, count(*) as frequency from purchase natural join customer group by email_id order by frequency desc'
+	cursor.execute(most_frequent_query)
+	customers = cursor.fetchall()
+	cursor.close()
+	return render_template('view_frequent_customers.html', customers = customers)
 
-	return render_template('schedule_maintenance.html')
+@app.route('/view_cusomter_flights', methods=['GET'])
+def view_cusomter_flights():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+
+	cursor = conn.cursor()
+	user_email_id = request.args.get('param1')
+	customer_query = 'SELECT * from customer where email_id = %s'
+	cursor.execute(customer_query, (user_email_id))
+	customer = cursor.fetchone()
+
+	flights_query = 'SELECT airline_name, departure_airport, arrival_airport, assigned_airplane_airline, assigned_airplaneID, flight_num, departure_date, departure_time, arrival_date, arrival_time, base_price_ticket, flight_status, total_seats, available_seats from (customer, purchase) natural join ticket natural join flight where customer.email_id = purchase.email_id and customer.email_id = %s and airline_name = %s'
+	cursor.execute(flights_query, (user_email_id, session['airline']))
+	flights = cursor.fetchall();
+	cursor.close()
+
+	for flight in flights:
+		current_date = datetime.now().date()
+		current_time = datetime.now().time()
+		dep_time_string = str(flight['departure_time'])
 
 
+		departure_time_nonString = datetime.strptime(dep_time_string, '%H:%M:%S').time()
+
+		if(current_date > flight['departure_date']):
+			flight['review'] = 'Reviews'
+		elif(current_date == flight['departure_date'] and current_time >= departure_time_nonString):
+			flight['review'] = 'Reviews'
+		
+
+	return render_template('view_customer_flights.html', customer = customer, flights = flights)
+
+@app.route('/view_earned_revenue', methods=['GET', 'POST'])
+def view_earned_revenue():
+	if(isNotValidStaff()):
+		return redirect(url_for('login_airline_staff'))
+
+	cursor = conn.cursor();
+	monthly_query = 'SELECT sum(amount_paid) as month_amt from purchase where purchase_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)'
+	cursor.execute(monthly_query)
+	monthly_amount = cursor.fetchone()
+
+	yearly_query = 'SELECT sum(amount_paid) as year_amt from purchase where purchase_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)'
+	cursor.execute(yearly_query)
+	yearly_amount = cursor.fetchone()
+	print(yearly_amount)
+	print(monthly_amount)
+	cursor.close()
+
+	return render_template('view_earned_revenue.html', month = monthly_amount['month_amt'], year = yearly_amount['year_amt'])
 ##################################################
 
 
@@ -625,65 +719,6 @@ def view_frequent_customers():
 
 
 ################################################################################################################################
-
-
-
-
-@app.route('/search_for_flights')
-def search_for_flights():
-	return render_template('search_for_flights.html')
-
-@app.route('/searchForFlights', methods=['GET', 'POST'])
-def searchForFlights():
-	src_airport1 = request.form['src_airport']
-	dst_airport1 = request.form['dst_airport']
-	dep_date = request.form['departure_date']
-	ret_date = request.form['return_date']
-	trip_type = request.form['trip_type']
-	cursor = conn.cursor()
-
-	outgoing_query = 'SELECT * From flight Where departure_airport = %s and arrival_airport = %s and departure_date = %s'
-	cursor.execute(outgoing_query, (src_airport1, dst_airport1, dep_date))
-	outgoing_flights = cursor.fetchall()
-	final_outgoing_flights = []
-
-	#To check to see if no tickets are available and then to check to see 
-	for flight in outgoing_flights:
-		
-		#All of the tickets
-		num_tickets_query = 'SELECT count(*) as "all" from ticket WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s'
-		cursor.execute(num_tickets_query, (flight['airline_name'], flight['flight_num'], flight['departure_date'], flight['departure_time']))
-		num_tickets = cursor.fetchone()
-
-		#
-		tickets_purchased_query = 'SELECT count(*) as "bought" from purchase WHERE ticketID in (SELECT ticketID from ticket WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s)'
-		cursor.execute(tickets_purchased_query, (flight['airline_name'], flight['flight_num'], flight['departure_date'], flight['departure_time']))
-		purchased_tickets = cursor.fetchone()
-
-
-		remaining_tickets = num_tickets['all'];
-
-		if(purchased_tickets):
-			remaining_tickets -= purchased_tickets['bought']
-
-		if(remaining_tickets/num_tickets['all'] <= 0.2):
-			flight['base_price_ticket'] = round(float(flight['base_price_ticket']) * 1.25,2)
-
-		#status != canceled 
-		if(remaining_tickets != 0):
-			final_outgoing_flights.append(flight)
-		
-
-	return_query = 'SELECT * From flight Where departure_airport = %s and arrival_airport = %s and departure_date = %s'
-	cursor.execute(return_query, (dst_airport1, src_airport1, ret_date))
-	return_flights = cursor.fetchall()
-
-	cursor.close()
-	if(trip_type == 'one_way'):
-		return render_template('search_for_flights.html', outBoundFlights=final_outgoing_flights, trip_type = 'one_way')
-	
-	return render_template('search_for_flights.html', outBoundFlights=final_outgoing_flights, returnBoundFlights=return_flights, trip_type = 'round_trip')
-
 
 
 

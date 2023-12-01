@@ -23,6 +23,8 @@
 		<th>Arrival Date</th>
 		<th>Arrival Time</th>
 		<th>Base Price Ticket</th>
+		<th>Total Seats</th>
+		<th>Available Seats</th>
 		<th>Flight Status</th>
 		<tr>
 			<td>{{flight['airline_name']}}</td>
@@ -34,6 +36,8 @@
 			<td>{{flight['arrival_date']}}</td>
 			<td>{{flight['arrival_time']}}</td>
 			<td>{{flight['base_price_ticket']}}</td>
+			<td>{{flight['total_seats']}}</td>
+			<td>{{flight['available_seats']}}</td>
 			<td><a href="/change_status?param1={{flight['flight_num']}}&param2={{ flight['airline_name']}}&param3={{flight['departure_date']}}&param4={{ flight['departure_time']}}">{{flight['flight_status']}}</a></td>
 		</tr>
 	</table>
