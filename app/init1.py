@@ -233,10 +233,8 @@ def viewFlights():
 		current_time = datetime.now().time()
 		dep_time_string = str(flight['departure_time'])
 
-		#departure_date_nonString = datetime.strptime(flight['departure_date'], '%Y-%m-%d').date()
-		#//print(dep_time_string)
+
 		departure_time_nonString = datetime.strptime(dep_time_string, '%H:%M:%S').time()
-		#print(departure_time_nonString)
 		if(current_date > flight['departure_date']):
 			flight['review'] = 'Reviews'
 		elif(current_date == flight['departure_date'] and current_time >= departure_time_nonString):
@@ -402,7 +400,6 @@ def createNewFlight():
 		total_seats_query = 'SELECT num_of_seats from airplane where airline_name = %s and airplaneID = %s'
 		cursor.execute(total_seats_query, (assigned_airplane_airline, airplane_ID))
 		total_seats = cursor.fetchone();
-		print(total_seats)
 		insert_flight_query = 'INSERT INTO flight VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
 		cursor.execute(insert_flight_query, (session['airline'], departure_airport, arrival_airport, assigned_airplane_airline, airplane_ID, flight_num, departure_date, departure_time, arrival_date, arrival_time, base_price, selected_status, total_seats['num_of_seats'], total_seats['num_of_seats']))
 
@@ -498,7 +495,7 @@ def createNewAirport():
 		cursor.execute(new_airport_insert, (airport_code, airport_name, airport_city, airport_city, airport_terminals, airport_type))
 		conn.commit();
 		cursor.close();
-		error = 'Airport ' + airport_code + ' as successfulyl been created'
+		error = 'Airport ' + airport_code + ' has Successfully been created'
 		return render_template('create_new_airport.html', error = error)
 
 @app.route('/search_flight_ratings', methods=['GET', 'POST'])
@@ -599,7 +596,6 @@ def scheduleMaintenance():
 	flights = cursor.fetchall()
 
 	for flight in flights:
-		print(type(str(flight['arrival_date'])))
 		arrival_date_NonStr = datetime.strptime(str(flight['arrival_date']), "%Y-%m-%d").date()
 		departure_date_NonStr = datetime.strptime(str(flight['departure_date']), "%Y-%m-%d").date()
 		arrival_time_NonStr = datetime.strptime(str(flight['arrival_time']), '%H:%M:%S').time()
@@ -633,8 +629,8 @@ def view_frequent_customers():
 		return redirect(url_for('login_airline_staff'))
 	
 	cursor = conn.cursor()
-	most_frequent_query = 'SELECT email_id, first_name, last_name, date_of_birth, count(*) as frequency from purchase natural join customer group by email_id order by frequency desc'
-	cursor.execute(most_frequent_query)
+	most_frequent_query = 'SELECT email_id, first_name, last_name, date_of_birth, count(*) as frequency from purchase natural join customer natural join ticket where airline_name = %s group by email_id order by frequency desc'
+	cursor.execute(most_frequent_query, (session['airline']))
 	customers = cursor.fetchall()
 	cursor.close()
 	return render_template('view_frequent_customers.html', customers = customers)
@@ -654,7 +650,7 @@ def view_cusomter_flights():
 	cursor.execute(flights_query, (user_email_id, session['airline']))
 	flights = cursor.fetchall();
 	cursor.close()
-
+	print(flights)
 	for flight in flights:
 		current_date = datetime.now().date()
 		current_time = datetime.now().time()
@@ -677,15 +673,13 @@ def view_earned_revenue():
 		return redirect(url_for('login_airline_staff'))
 
 	cursor = conn.cursor();
-	monthly_query = 'SELECT sum(amount_paid) as month_amt from purchase where purchase_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)'
-	cursor.execute(monthly_query)
+	monthly_query = 'SELECT sum(amount_paid) as month_amt from purchase natural join ticket where airline_name = %s and purchase_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)'
+	cursor.execute(monthly_query, (session['airline']))
 	monthly_amount = cursor.fetchone()
 
-	yearly_query = 'SELECT sum(amount_paid) as year_amt from purchase where purchase_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)'
-	cursor.execute(yearly_query)
+	yearly_query = 'SELECT sum(amount_paid) as year_amt from purchase natural join ticket where airline_name = %s and purchase_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)'
+	cursor.execute(yearly_query, (session['airline']))
 	yearly_amount = cursor.fetchone()
-	print(yearly_amount)
-	print(monthly_amount)
 	cursor.close()
 
 	return render_template('view_earned_revenue.html', month = monthly_amount['month_amt'], year = yearly_amount['year_amt'])
@@ -722,9 +716,6 @@ def view_earned_revenue():
 
 
 
-
-
-		
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000
 #debug = True -> you don't have to restart flask
