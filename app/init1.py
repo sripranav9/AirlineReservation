@@ -403,15 +403,19 @@ def createNewFlight():
 		insert_flight_query = 'INSERT INTO flight VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
 		cursor.execute(insert_flight_query, (session['airline'], departure_airport, arrival_airport, assigned_airplane_airline, airplane_ID, flight_num, departure_date, departure_time, arrival_date, arrival_time, base_price, selected_status, total_seats['num_of_seats'], total_seats['num_of_seats']))
 
-		##If I want to create tickets for each flight created I do it here
 
 
 
 		conn.commit()
+		
+		thirty_day_query = 'SELECT * FROM flight WHERE airline_name = %s and CURRENT_DATE <= departure_date and departure_date <= DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY) ORDER BY departure_date DESC'
+		cursor.execute(thirty_day_query, (session['airline']))
+		thirty_day_flights = cursor.fetchall()
 		cursor.close()
-
-
-		return redirect(url_for('view_flights'))
+		cursor.close()
+		message = "Flights in next 30 days"
+		createFlight = 'Successfully Created a New Flight'
+		return render_template('view_flights.html', outBoundFlights = thirty_day_flights, message = message, createFlight = createFlight)
 
 
 @app.route('/create_new_airplane', methods=['GET', 'POST'])
