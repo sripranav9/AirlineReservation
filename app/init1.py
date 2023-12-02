@@ -497,6 +497,57 @@ def customer_spending():
     return render_template('customer-spending.html', spending_history_data=spending_history_data,
                            total_spent_amount=total_spent_amount['total_amount'] )
 
+@app.route('/customer-rate-flight', methods=['GET'])
+def customer_rate_flight():
+    customer_email = session.get('email')  # Retrieve the logged-in user's email from the session
+    cursor = conn.cursor()
+
+    # Fetch flights that have not been rated by the user yet: Display details from flight and purchase, and check the review table for existing entries
+    query = '''
+    SELECT 
+        p.ticketID,
+        f.airline_name, 
+        f.flight_num, 
+        f.departure_airport,
+        f.arrival_airport,
+        f.departure_date, 
+        f.departure_time
+    FROM 
+        purchase p, flight f, ticket t
+    WHERE 
+        p.ticketID = t.ticketID AND
+        t.airline_name = f.airline_name AND
+        t.flight_num = f.flight_num AND
+        t.departure_date = f.departure_date AND
+        t.departure_time = f.departure_time AND
+        p.email_id = %s AND 
+        (f.arrival_date < CURRENT_DATE() OR (f.arrival_date = CURRENT_DATE() AND f.arrival_time < CURRENT_TIME())) AND
+        NOT EXISTS (
+            SELECT 1 FROM review r WHERE r.ticketID = p.ticketID
+        )
+    '''
+    cursor.execute(query, (customer_email))
+    flights_to_rate = cursor.fetchall()
+    cursor.close()
+
+    return render_template('customer-rate-flight.html', flights=flights_to_rate)
+
+@app.route('/customer-submit-rating', methods=['POST'])
+def customer_submit_rating():
+    # Retrieve data from form
+    ticketID = request.form.get('ticketID')
+    rate = request.form.get('rate')
+    comment = request.form.get('comment')
+    customer_email = session.get('email')  # Assume user is logged in and email is in session
+
+    cursor = conn.cursor()
+    query = 'INSERT INTO review (ticketID, email_id, rate, comment) VALUES (%s, %s, %s, %s)'
+    cursor.execute(query, (ticketID, customer_email, rate, comment))
+    conn.commit()  # Don't forget to commit your changes
+    cursor.close()
+
+    return redirect(url_for('customer_rate_flight'))
+
 		
 app.secret_key = 'some key that you will never guess'
 # app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
