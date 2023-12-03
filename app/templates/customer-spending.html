@@ -12,38 +12,46 @@
 <body>
 	<a href="/customerHome">Back</a>
 
-	<h2>Spending History</h2>
-        <table>
-            <tr>
-                <th>Ticket ID</th>
-                <th>Amount Paid</th>
-                <th>Purchase Date</th>
-                <th>Purchase Time</th>
-				<th> -> </th>
-				<th>Airline</th>
-                <th>Flight Number</th>
-                <th>Departure Date</th>
-                <th>Departure Time</th>
+    <!-- Default: Total amount last year -->
+    <p>
+        Total Amount Spent: ${{ total_spent_past_year }}
+    </p>
+    <p>
+        By default, you're shown the results for the past 6 months. Choose a date range to filter the results.
+    </p>
 
-            </tr>
-            {% for purchase in spending_history_data %}
-            <tr>
-                <td>{{ purchase['ticketID'] }}</td>
-                <td>{{ purchase['amount_paid'] }}</td>
-                <td>{{ purchase['purchase_date'] }}</td>
-                <td>{{ purchase['purchase_time'] }}</td>
-				<td></td>
-                <td>{{ purchase['airline_name'] }}</td>
-                <td>{{ purchase['flight_num'] }}</td>
-                <td>{{ purchase['departure_date'] }}</td>
-                <td>{{ purchase['departure_time'] }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-			<br>
-			<p>
-				Total Amount Spent: ${{ total_spent_amount }}
-			</p>
+    <form action="{{ url_for('customer_spending') }}" method="post">
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date">
+        <label for="end_date">End Date:</label>
+        <input type="date" id="end_date" name="end_date">
+        <input type="submit" value="Filter">
+    </form>
+
+    <!-- If a date range is specified -->
+    {% if date_range_spending %}
+    <h2>Spending Between {{ start_date }} and {{ end_date }}</h2>
+    <p>${{ date_range_spending['total_amount'] }}</p>
+    {% endif %}
+
+    <!-- If a date range is not specified -->
+    {% if not date_range_spending %}
+    <h2>Monthly Spending in the Last 6 Months</h2>
+    <table>
+        <tr>
+            <th>Month</th>
+            <th>Year</th>
+            <th>Total Amount</th>
+        </tr>
+        {% for spending in monthly_spending_data %}
+        <tr>
+            <td>{{ spending['month'] }}</td>
+            <td>{{ spending['year'] }}</td>
+            <td>${{ spending['total_amount'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
 			
 </body>
 

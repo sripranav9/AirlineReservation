@@ -467,35 +467,35 @@ def purchase_confirmation():
     # After processing, redirect to a page that confirms the purchase
     return render_template('customer-purchase-confirmation.html', outboundTicketID=outboundTicketID, inboundTicketID=inboundTicketID)
 
-# @app.route('/customer-spending', methods=['GET','POST'])
-# def customer_spending():
-#     if(isNotValidCustomer()):
-#         # The user is not logged in, redirect them to the login page
-#         return redirect(url_for('customer_login'))
+@app.route('/customer-all-purchases', methods=['GET','POST'])
+def customer_all_purchases():
+    if(isNotValidCustomer()):
+        # The user is not logged in, redirect them to the login page
+        return redirect(url_for('customer_login'))
     
-#     customer_email = session['email'] # To load the customer data accordingly
-#     cursor = conn.cursor()
+    customer_email = session['email'] # To load the customer data accordingly
+    cursor = conn.cursor()
 
-#     # Query to get the Purchase History and connected Ticket data
-#     spending_history_query = '''
-#             SELECT p.ticketID, p.amount_paid, p.purchase_date, p.purchase_time, 
-#             t.airline_name, t.flight_num ,t.departure_date, t.departure_time 
-#             FROM `purchase` as p ,`ticket` as t 
-#             WHERE t.ticketID = p.ticketID AND p.email_id = %s
-#             ORDER BY purchase_date DESC, purchase_time DESC;
-#             '''
-#     cursor.execute(spending_history_query, (customer_email))
-#     spending_history_data = cursor.fetchall()
+    # Query to get the Purchase History and connected Ticket data
+    spending_history_query = '''
+            SELECT p.ticketID, p.amount_paid, p.purchase_date, p.purchase_time, 
+            t.airline_name, t.flight_num ,t.departure_date, t.departure_time 
+            FROM `purchase` as p ,`ticket` as t 
+            WHERE t.ticketID = p.ticketID AND p.email_id = %s
+            ORDER BY purchase_date DESC, purchase_time DESC;
+            '''
+    cursor.execute(spending_history_query, (customer_email))
+    spending_history_data = cursor.fetchall()
 
-#     # Query to get the total amount spent by the customer in session
-#     total_spent_query = 'SELECT SUM(amount_paid) AS total_amount FROM `purchase` WHERE email_id = %s'
-#     cursor.execute(total_spent_query, (customer_email))
-#     total_spent_amount = cursor.fetchone()
+    # Query to get the total amount spent by the customer in session
+    total_spent_query = 'SELECT SUM(amount_paid) AS total_amount FROM `purchase` WHERE email_id = %s'
+    cursor.execute(total_spent_query, (customer_email))
+    total_spent_amount = cursor.fetchone()
 
-#     cursor.close()
+    cursor.close()
     
-#     return render_template('customer-spending.html', spending_history_data=spending_history_data,
-#                            total_spent_amount=total_spent_amount['total_amount'] )
+    return render_template('customer-all-purchases.html', spending_history_data=spending_history_data,
+                           total_spent_amount=total_spent_amount['total_amount'] )
 
 @app.route('/customer-spending', methods=['GET','POST'])
 def customer_spending():
@@ -506,7 +506,7 @@ def customer_spending():
     customer_email = session['email'] # To load the customer data accordingly
     cursor = conn.cursor()
 
-    # Query to get the total amount spent by the customer in the past year
+    # Query to get the total amount spent by the customer in the last 1 year
     total_spent_past_year_query = '''
         SELECT SUM(amount_paid) AS total_amount
         FROM `purchase`
@@ -528,10 +528,28 @@ def customer_spending():
     cursor.execute(monthly_spending_query, (customer_email))
     monthly_spending_data = cursor.fetchall()
 
+    # Initialize variables for date range
+    start_date = request.form.get('start_date')
+    end_date = request.form.get('end_date')
+
+    # If both start_date and end_date are provided, fetch the data within the range
+    if start_date and end_date:
+        date_range_query = '''
+            SELECT SUM(amount_paid) AS total_amount
+            FROM `purchase`
+            WHERE email_id = %s AND purchase_date BETWEEN %s AND %s
+        '''
+        cursor.execute(date_range_query, (customer_email, start_date, end_date))
+        date_range_spending = cursor.fetchone()
+    else:
+        date_range_spending = None
+
     cursor.close()
     
-    return render_template('customer-spending.html', spending_history_data=spending_history_data,
-                           total_spent_amount=total_spent_amount['total_amount'] )
+    return render_template('customer-spending.html', monthly_spending_data=monthly_spending_data,
+                           date_range_spending=date_range_spending,
+                           total_spent_past_year=total_spent_past_year['total_amount'], 
+                           start_date=start_date, end_date=end_date )
 
 @app.route('/customer-rate-flight', methods=['GET'])
 def customer_rate_flight():
