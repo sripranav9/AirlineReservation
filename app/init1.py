@@ -499,6 +499,10 @@ def customer_spending():
 
 @app.route('/customer-rate-flight', methods=['GET'])
 def customer_rate_flight():
+    if(isNotValidCustomer()):
+        # The user is not logged in, redirect them to the login page
+        return redirect(url_for('customer_login'))
+    
     customer_email = session.get('email')  # Retrieve the logged-in user's email from the session
     cursor = conn.cursor()
 
@@ -548,7 +552,94 @@ def customer_submit_rating():
 
     return redirect(url_for('customer_rate_flight'))
 
-		
+@app.route('/customer-view-flights', methods=['GET','POST'])
+def customer_view_flights():
+    if(isNotValidCustomer()):
+        # The user is not logged in, redirect them to the login page
+        return redirect(url_for('customer_login'))
+
+    customer_email = session.get('email')  # Retrieve the logged-in user's email from the session
+    cursor = conn.cursor()
+
+    # Fetch upcoming flights
+    upcoming_flights_query = '''
+        SELECT p.ticketID, f.airline_name, f.flight_num, f.departure_airport, f.arrival_airport, 
+        f.departure_date, f.departure_time,
+        (f.departure_date > CURRENT_DATE() OR 
+        (f.departure_date = CURRENT_DATE() AND f.departure_time > ADDTIME(CURRENT_TIME(), '24:00:00'))) AS can_cancel
+        FROM purchase p, flight f, ticket t WHERE p.ticketID = t.ticketID AND 
+        t.airline_name = f.airline_name AND
+        t.flight_num = f.flight_num AND
+        t.departure_date = f.departure_date AND
+        t.departure_time = f.departure_time AND
+        p.email_id = %s
+        AND f.departure_date >= CURRENT_DATE()
+        ORDER BY departure_date ASC, departure_time ASC
+    '''
+    # The above SQL Query has a boolean value that shows whether the flight is less than 24 hours away, by which the user cannot be provided an option to cancel
+    cursor.execute(upcoming_flights_query, (customer_email,))
+    upcoming_flights = cursor.fetchall()
+
+     # Fetch previous flights
+    previous_flights_query = '''
+        SELECT p.ticketID, f.airline_name, f.flight_num, f.departure_airport, f.arrival_airport, 
+        f.departure_date, f.departure_time
+        FROM purchase p, flight f, ticket t WHERE p.ticketID = t.ticketID AND 
+        t.airline_name = f.airline_name AND
+        t.flight_num = f.flight_num AND
+        t.departure_date = f.departure_date AND
+        t.departure_time = f.departure_time AND
+        p.email_id = %s
+        AND f.departure_date < CURRENT_DATE()
+        ORDER BY departure_date DESC, departure_time DESC
+    '''
+    cursor.execute(previous_flights_query, (customer_email))
+    previous_flights = cursor.fetchall()
+
+    cursor.close()
+
+    return render_template('customer-view-flights.html', upcoming_flights = upcoming_flights, previous_flights = previous_flights)
+
+def customer_cancel_flight():
+    if(isNotValidCustomer()):
+        # The user is not logged in, redirect them to the login page
+        return redirect(url_for('customer_login'))
+    
+    # Get the ticketID from customer view flights page
+    ticket_id_to_cancel = request.form.get('cancel_ticket_id')
+    customer_email = session['email_id']
+
+    cursor = conn.cursor()
+
+    # Check if the flight is more than 24 hours away
+    # (Double checking in the back-end too. Already blocked in the front-end)
+    query = '''
+    SELECT
+        (f.departure_date > CURRENT_DATE() OR 
+        (f.departure_date = CURRENT_DATE() AND f.departure_time > ADDTIME(CURRENT_TIME(), '24:00:00'))) AS can_cancel
+        FROM purchase p, flight f, ticket t WHERE p.ticketID = t.ticketID AND 
+        t.airline_name = f.airline_name AND
+        t.flight_num = f.flight_num AND
+        t.departure_date = f.departure_date AND
+        t.departure_time = f.departure_time AND
+        p.ticketID = %s AND p.email_id = %s
+        AND f.departure_date >= CURRENT_DATE()
+    '''
+    cursor.execute(query, (ticket_id_to_cancel, customer_email))
+    can_cancel = cursor.fetchone()
+
+    if can_cancel:
+        # Perform the cancellation
+        delete_query = 'DELETE FROM purchase WHERE ticketID = %s AND email_id = %s'
+        cursor.execute(delete_query, (ticket_id_to_cancel, customer_email))
+        conn.commit()
+        cursor.close()
+        return redirect(url_for('customer_view_flights'))
+    else:
+        error = "Flight cancelled successfully."
+        cursor.close()
+        return render_template('customer-view-flights.html', error=error)
+
 app.secret_key = 'some key that you will never guess'
 # app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
 #Run the app on localhost port 5000
