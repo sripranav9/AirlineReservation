@@ -17,21 +17,21 @@
         Total Amount Spent: ${{ total_spent_past_year }}
     </p>
     <p>
-        By default, you're shown the results for the past 6 months. Choose a date range to filter the results.
+        By default, you're shown the monthly spending results for the past 6 months. Choose a date range to filter the results.
     </p>
 
     <form action="{{ url_for('customer_spending') }}" method="post">
         <label for="start_date">Start Date:</label>
-        <input type="date" id="start_date" name="start_date">
+        <input type="date" id="start_date" name="start_date" required>
         <label for="end_date">End Date:</label>
-        <input type="date" id="end_date" name="end_date">
+        <input type="date" id="end_date" name="end_date" required>
         <input type="submit" value="Filter">
     </form>
 
     <!-- If a date range is specified -->
     {% if date_range_spending %}
     <h2>Spending Between {{ start_date }} and {{ end_date }}</h2>
-    <p>${{ date_range_spending['total_amount'] }}</p>
+    <p>${{ date_range_spending_amount['total_amount'] }}</p>
     {% endif %}
 
     <!-- If a date range is not specified -->

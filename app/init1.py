@@ -534,22 +534,23 @@ def customer_spending():
 
     # If both start_date and end_date are provided, fetch the data within the range
     if start_date and end_date:
-        date_range_query = '''
+        amount_in_date_range_query = '''
             SELECT SUM(amount_paid) AS total_amount
             FROM `purchase`
             WHERE email_id = %s AND purchase_date BETWEEN %s AND %s
         '''
-        cursor.execute(date_range_query, (customer_email, start_date, end_date))
-        date_range_spending = cursor.fetchone()
+        cursor.execute(amount_in_date_range_query, (customer_email, start_date, end_date))
+        date_range_spending_amount = cursor.fetchone()
     else:
-        date_range_spending = None
+        date_range_spending_amount = None
 
     cursor.close()
     
-    return render_template('customer-spending.html', monthly_spending_data=monthly_spending_data,
-                           date_range_spending=date_range_spending,
-                           total_spent_past_year=total_spent_past_year['total_amount'], 
-                           start_date=start_date, end_date=end_date )
+    return render_template('customer-spending.html', total_spent_past_year=total_spent_past_year['total_amount'],
+                           monthly_spending_data=monthly_spending_data,
+                           start_date=start_date, end_date=end_date, 
+                           date_range_spending_amount=date_range_spending_amount)
+                           
 
 @app.route('/customer-rate-flight', methods=['GET'])
 def customer_rate_flight():
