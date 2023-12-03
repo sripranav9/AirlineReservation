@@ -600,6 +600,7 @@ def customer_view_flights():
 
     return render_template('customer-view-flights.html', upcoming_flights = upcoming_flights, previous_flights = previous_flights)
 
+@app.route('/customer-cancel-flight', methods=['GET','POST'])
 def customer_cancel_flight():
     if(isNotValidCustomer()):
         # The user is not logged in, redirect them to the login page
@@ -607,7 +608,7 @@ def customer_cancel_flight():
     
     # Get the ticketID from customer view flights page
     ticket_id_to_cancel = request.form.get('cancel_ticket_id')
-    customer_email = session['email_id']
+    customer_email = session['email']
 
     cursor = conn.cursor()
 
@@ -627,18 +628,40 @@ def customer_cancel_flight():
     '''
     cursor.execute(query, (ticket_id_to_cancel, customer_email))
     can_cancel = cursor.fetchone()
+    
+    if can_cancel and (can_cancel['can_cancel'] == 1):
+        try:
+            # Add 1 available_seat to the flight
+            update_seats_query = '''
+            UPDATE flight f
+                JOIN ticket t ON f.airline_name = t.airline_name 
+                AND f.flight_num = t.flight_num 
+                AND f.departure_date = t.departure_date 
+                AND f.departure_time = t.departure_time
+            SET f.available_seats = f.available_seats + 1
+            WHERE t.ticketID = %s;
+            '''
+            cursor.execute(update_seats_query, (ticket_id_to_cancel))
+            
+            # Delete the data from purchase and ticket table in the same order
+            cursor.execute('DELETE FROM purchase WHERE ticketID = %s AND email_id = %s', (ticket_id_to_cancel, customer_email))
+            cursor.execute('DELETE FROM ticket WHERE ticketID = %s', (ticket_id_to_cancel))
+            conn.commit()
 
-    if can_cancel:
-        # Perform the cancellation
-        delete_query = 'DELETE FROM purchase WHERE ticketID = %s AND email_id = %s'
-        cursor.execute(delete_query, (ticket_id_to_cancel, customer_email))
-        conn.commit()
-        cursor.close()
-        return redirect(url_for('customer_view_flights'))
+        except Exception as e:
+            conn.rollback()  # Roll back the transaction on error
+            print(f"Error: {e}")  # Logging the exception can help in debugging
+            error = "Could not complete the cancellation. Aborted."
+            return render_template('customer-view-flights.html', error=error)
+        
+        finally:
+            cursor.close()  # Ensure the cursor is closed
     else:
-        error = "Flight cancelled successfully."
-        cursor.close()
+        cursor.close()  # Close cursor if cancellation is not allowed
+        error = "Flight cannot be cancelled within 24 hours of departure."
         return render_template('customer-view-flights.html', error=error)
+
+    return redirect(url_for('customer_view_flights'))
 
 app.secret_key = 'some key that you will never guess'
 # app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
