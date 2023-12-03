@@ -29,13 +29,27 @@
     </form>
 
     <!-- If a date range is specified -->
-    {% if date_range_spending %}
+    {% if date_range_spending_amount %}
     <h2>Spending Between {{ start_date }} and {{ end_date }}</h2>
-    <p>${{ date_range_spending_amount['total_amount'] }}</p>
+    <p>Total amount spent in the given date range: ${{ date_range_spending_amount['total_amount'] }}</p>
+    <table>
+        <tr>
+            <th>Month</th>
+            <th>Year</th>
+            <th>Total Amount</th>
+        </tr>
+        {% for spending in date_range_monthly_spending_data %}
+        <tr>
+            <td>{{ spending['month'] }}</td>
+            <td>{{ spending['year'] }}</td>
+            <td>${{ spending['total_amount'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
     {% endif %}
 
     <!-- If a date range is not specified -->
-    {% if not date_range_spending %}
+    {% if not date_range_spending_amount %}
     <h2>Monthly Spending in the Last 6 Months</h2>
     <table>
         <tr>

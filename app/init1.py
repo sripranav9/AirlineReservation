@@ -521,8 +521,8 @@ def customer_spending():
             SUM(amount_paid) AS total_amount 
         FROM purchase 
         WHERE email_id = %s AND 
-            purchase_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND 
-            CURDATE() GROUP BY month, year 
+            purchase_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND CURDATE() 
+        GROUP BY month, year 
         ORDER BY year, month DESC;
     '''
     cursor.execute(monthly_spending_query, (customer_email))
@@ -531,9 +531,12 @@ def customer_spending():
     # Initialize variables for date range
     start_date = request.form.get('start_date')
     end_date = request.form.get('end_date')
+    date_range_spending_amount = None
+    date_range_monthly_spending_data = None
 
     # If both start_date and end_date are provided, fetch the data within the range
     if start_date and end_date:
+        # Total amount spent in the date range
         amount_in_date_range_query = '''
             SELECT SUM(amount_paid) AS total_amount
             FROM `purchase`
@@ -541,6 +544,19 @@ def customer_spending():
         '''
         cursor.execute(amount_in_date_range_query, (customer_email, start_date, end_date))
         date_range_spending_amount = cursor.fetchone()
+        
+        # Month wise spending in the date range
+        date_range_monthly_spending_query = '''
+        SELECT MONTHNAME(purchase_date) AS month, YEAR(purchase_date) AS year, 
+            SUM(amount_paid) AS total_amount 
+        FROM purchase 
+        WHERE email_id = %s AND 
+            purchase_date BETWEEN %s and %s 
+        GROUP BY month, year 
+        ORDER BY year, month DESC;
+        '''
+        cursor.execute(date_range_monthly_spending_query, (customer_email, start_date, end_date))
+        date_range_monthly_spending_data = cursor.fetchall()
     else:
         date_range_spending_amount = None
 
@@ -549,7 +565,9 @@ def customer_spending():
     return render_template('customer-spending.html', total_spent_past_year=total_spent_past_year['total_amount'],
                            monthly_spending_data=monthly_spending_data,
                            start_date=start_date, end_date=end_date, 
-                           date_range_spending_amount=date_range_spending_amount)
+                           date_range_spending_amount=date_range_spending_amount, # to fetch total amount only
+                           date_range_monthly_spending_data=date_range_monthly_spending_data # to fetch all data
+                           )
                            
 
 @app.route('/customer-rate-flight', methods=['GET'])
