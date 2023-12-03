@@ -467,6 +467,36 @@ def purchase_confirmation():
     # After processing, redirect to a page that confirms the purchase
     return render_template('customer-purchase-confirmation.html', outboundTicketID=outboundTicketID, inboundTicketID=inboundTicketID)
 
+# @app.route('/customer-spending', methods=['GET','POST'])
+# def customer_spending():
+#     if(isNotValidCustomer()):
+#         # The user is not logged in, redirect them to the login page
+#         return redirect(url_for('customer_login'))
+    
+#     customer_email = session['email'] # To load the customer data accordingly
+#     cursor = conn.cursor()
+
+#     # Query to get the Purchase History and connected Ticket data
+#     spending_history_query = '''
+#             SELECT p.ticketID, p.amount_paid, p.purchase_date, p.purchase_time, 
+#             t.airline_name, t.flight_num ,t.departure_date, t.departure_time 
+#             FROM `purchase` as p ,`ticket` as t 
+#             WHERE t.ticketID = p.ticketID AND p.email_id = %s
+#             ORDER BY purchase_date DESC, purchase_time DESC;
+#             '''
+#     cursor.execute(spending_history_query, (customer_email))
+#     spending_history_data = cursor.fetchall()
+
+#     # Query to get the total amount spent by the customer in session
+#     total_spent_query = 'SELECT SUM(amount_paid) AS total_amount FROM `purchase` WHERE email_id = %s'
+#     cursor.execute(total_spent_query, (customer_email))
+#     total_spent_amount = cursor.fetchone()
+
+#     cursor.close()
+    
+#     return render_template('customer-spending.html', spending_history_data=spending_history_data,
+#                            total_spent_amount=total_spent_amount['total_amount'] )
+
 @app.route('/customer-spending', methods=['GET','POST'])
 def customer_spending():
     if(isNotValidCustomer()):
@@ -476,21 +506,27 @@ def customer_spending():
     customer_email = session['email'] # To load the customer data accordingly
     cursor = conn.cursor()
 
-    # Query to get the Purchase History and connected Ticket data
-    spending_history_query = '''
-            SELECT p.ticketID, p.amount_paid, p.purchase_date, p.purchase_time, 
-            t.airline_name, t.flight_num ,t.departure_date, t.departure_time 
-            FROM `purchase` as p ,`ticket` as t 
-            WHERE t.ticketID = p.ticketID AND p.email_id = %s
-            ORDER BY purchase_date DESC, purchase_time DESC;
-            '''
-    cursor.execute(spending_history_query, (customer_email))
-    spending_history_data = cursor.fetchall()
+    # Query to get the total amount spent by the customer in the past year
+    total_spent_past_year_query = '''
+        SELECT SUM(amount_paid) AS total_amount
+        FROM `purchase`
+        WHERE email_id = %s AND purchase_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND CURDATE()
+    '''
+    cursor.execute(total_spent_past_year_query, (customer_email,))
+    total_spent_past_year = cursor.fetchone()
 
-    # Query to get the total amount spent by the customer in session
-    total_spent_query = 'SELECT SUM(amount_paid) AS total_amount FROM `purchase` WHERE email_id = %s'
-    cursor.execute(total_spent_query, (customer_email))
-    total_spent_amount = cursor.fetchone()
+    # Query to get the month-wise spending for the last six months
+    monthly_spending_query = '''
+        SELECT MONTHNAME(purchase_date) AS month, YEAR(purchase_date) AS year, 
+            SUM(amount_paid) AS total_amount 
+        FROM purchase 
+        WHERE email_id = %s AND 
+            purchase_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND 
+            CURDATE() GROUP BY month, year 
+        ORDER BY year, month DESC;
+    '''
+    cursor.execute(monthly_spending_query, (customer_email))
+    monthly_spending_data = cursor.fetchall()
 
     cursor.close()
     
