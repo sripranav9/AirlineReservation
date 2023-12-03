@@ -131,9 +131,9 @@ create table review
 	 comment			varchar(500),
 
 	 primary key(ticketID),
-	 foreign key(ticketID) references ticket(ticketID));
-	-- Commented out on 11/23 to correct the change/match relational schema definitions
-	--  foreign key(email_id) references customer(email_id)
+	 foreign key(ticketID) references ticket(ticketID),
+	 foreign key(email_id) references customer(email_id));
+
 
 create table purchase
 	(ticketID				int,
