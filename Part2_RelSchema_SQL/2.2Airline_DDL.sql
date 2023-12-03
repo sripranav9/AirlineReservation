@@ -129,8 +129,7 @@ create table review
 	 comment			varchar(500),
 
 	 primary key(ticketID),
-	 foreign key(ticketID) references ticket(ticketID),
-	 foreign key(email_id) references customer(email_id)
+	 foreign key(ticketID) references ticket(ticketID)
 	);
 
 create table purchase

@@ -134,6 +134,7 @@ create table review
 	 foreign key(ticketID) references ticket(ticketID),
 	 foreign key(email_id) references customer(email_id));
 
+
 create table purchase
 	(ticketID				int,
 	 email_id				varchar(100),
