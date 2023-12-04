@@ -1405,6 +1405,31 @@ def view_earned_revenue():
 	cursor.close()
 
 	return render_template('view_earned_revenue.html', month = monthly_amount['month_amt'], year = yearly_amount['year_amt'])
+
+@app.route('/check_flight_status', methods=['GET', 'POST'])
+def check_flight_status():
+    return render_template('check_flight_status.html')
+
+@app.route('/checkFlightStatus', methods=['GET', 'POST'])
+def checkFlightStatus():
+
+    cursor = conn.cursor()
+    airline = request.form['airline_name']
+    flight_num = request.form['flight_num']
+    departure_date = request.form['departure']
+    arrival_date = request.form['arrival']
+
+    print(airline, flight_num, departure_date, arrival_date)
+    flight_query = 'SELECT * FROM flight where airline_name = %s and flight_num = %s and departure_date = %s and arrival_date = %s'
+    cursor.execute(flight_query, (airline, flight_num, departure_date, arrival_date))
+    flightExists = cursor.fetchall()
+    cursor.close()
+    print(flightExists)
+    if(not flightExists):
+        error = "Sorry this flight does not exist"
+        return render_template('check_flight_status.html', error = error)
+    else:
+        return render_template('check_flight_status.html', flights = flightExists)
 ##################################################
 
 app.secret_key = 'some key that you will never guess'
