@@ -380,6 +380,16 @@ def purchase_confirmation():
     print(selected_inbound, selected_outbound)
     # total_cost = session.pop('total_cost', None)
 
+    # Check whether the ticket is for the customer logged in or someone else
+    buying_for_others = request.form.get('buying_for_others') == 'yes'
+    print(buying_for_others)
+    if buying_for_others:
+        print("buying for others activated")
+        # Get the passenger details from the form
+        passenger_fname = request.form.get('passenger_fname')
+        passenger_lname = request.form.get('passenger_lname')
+        passenger_dob = request.form.get('passenger_dob')
+
     # Process the form data from the customer-purchase page to confirm the purchase
     card_type = request.form['card_type']
     card_number = request.form['card_number']
@@ -402,21 +412,41 @@ def purchase_confirmation():
             '''
             cursor.execute(ticket_insert_query, (outboundTicketID, outbound_details[1], outbound_details[0], outbound_details[2], outbound_details[3]))
 
-            # Add data to purchase table
-            purchase_insert_query = '''
-            INSERT INTO purchase (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time, amount_paid)
-            SELECT %s, %s, first_name, last_name, date_of_birth, %s, %s, %s, %s, CURDATE(), CURTIME(), %s
-            FROM customer WHERE email_id = %s
-            '''
-            cursor.execute(purchase_insert_query, 
-                (outboundTicketID, 
-                    customer_email, 
-                    card_type, 
-                    card_number, 
-                    name_on_card, 
-                    expiration_date,
-                    outbound_cost, 
-                    customer_email))
+            if buying_for_others:
+				# Customer buying a ticket for someone else
+                purchase_insert_query = '''
+                INSERT INTO purchase (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time, amount_paid)
+                SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s, CURDATE(), CURTIME(), %s
+                FROM customer WHERE email_id = %s
+                '''
+                cursor.execute(purchase_insert_query, 
+                    (outboundTicketID, 
+                        customer_email,
+						passenger_fname,
+						passenger_lname,
+						passenger_dob,
+                        card_type, 
+                        card_number, 
+                        name_on_card, 
+                        expiration_date,
+                        outbound_cost, 
+                        customer_email))
+            else:
+                # Customer buying a ticket for himself - Add data to purchase table
+                purchase_insert_query = '''
+                INSERT INTO purchase (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time, amount_paid)
+                SELECT %s, %s, first_name, last_name, date_of_birth, %s, %s, %s, %s, CURDATE(), CURTIME(), %s
+                FROM customer WHERE email_id = %s
+                '''
+                cursor.execute(purchase_insert_query, 
+                    (outboundTicketID, 
+                        customer_email, 
+                        card_type, 
+                        card_number, 
+                        name_on_card, 
+                        expiration_date,
+                        outbound_cost, 
+                        customer_email))
             
             # Update available seats on flight table
             update_seats_query = 'UPDATE flight SET available_seats = available_seats - 1 WHERE airline_name = %s AND flight_num = %s AND departure_date = %s AND departure_time = %s'
@@ -431,21 +461,41 @@ def purchase_confirmation():
             '''
             cursor.execute(ticket_insert_query, (inboundTicketID, inbound_details[1], inbound_details[0], inbound_details[2], inbound_details[3]))
 
-            # Add data to purchase table
-            purchase_insert_query_return = '''
-            INSERT INTO purchase (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time, amount_paid)
-            SELECT %s, %s, first_name, last_name, date_of_birth, %s, %s, %s, %s, CURDATE(), CURTIME(), %s
-            FROM customer WHERE email_id = %s
-            '''
-            cursor.execute(purchase_insert_query_return, 
-                (inboundTicketID, 
-                    customer_email, 
-                    card_type, 
-                    card_number, 
-                    name_on_card, 
-                    expiration_date,
-                    inbound_cost, 
-                    customer_email))        
+            if buying_for_others:
+				# Customer buying a ticket for someone else
+                purchase_insert_query_return = '''
+                INSERT INTO purchase (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time, amount_paid)
+                SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s, CURDATE(), CURTIME(), %s
+                FROM customer WHERE email_id = %s
+                '''
+                cursor.execute(purchase_insert_query_return, 
+                    (inboundTicketID, 
+                        customer_email,
+						passenger_fname,
+						passenger_lname,
+						passenger_dob,
+                        card_type, 
+                        card_number, 
+                        name_on_card, 
+                        expiration_date,
+                        inbound_cost, 
+                        customer_email))
+            else:
+                # Customer buying a ticket for himself - Add data to purchase table
+                purchase_insert_query_return = '''
+                INSERT INTO purchase (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time, amount_paid)
+                SELECT %s, %s, first_name, last_name, date_of_birth, %s, %s, %s, %s, CURDATE(), CURTIME(), %s
+                FROM customer WHERE email_id = %s
+                '''
+                cursor.execute(purchase_insert_query_return, 
+                    (inboundTicketID, 
+                        customer_email, 
+                        card_type, 
+                        card_number, 
+                        name_on_card, 
+                        expiration_date,
+                        inbound_cost, 
+                        customer_email))        
 
             # Update available seats on flight table
             update_seats_query = 'UPDATE flight SET available_seats = available_seats - 1 WHERE airline_name = %s AND flight_num = %s AND departure_date = %s AND departure_time = %s'
