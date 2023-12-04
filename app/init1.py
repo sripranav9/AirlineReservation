@@ -687,7 +687,7 @@ def customer_view_flights():
 
     # Fetch upcoming flights
     upcoming_flights_query = '''
-        SELECT p.ticketID, f.airline_name, f.flight_num, f.departure_airport, f.arrival_airport, 
+        SELECT p.first_name, p.ticketID, f.airline_name, f.flight_num, f.departure_airport, f.arrival_airport, 
         f.departure_date, f.departure_time,
         (f.departure_date > CURRENT_DATE() OR 
         (f.departure_date = CURRENT_DATE() AND f.departure_time > ADDTIME(CURRENT_TIME(), '24:00:00'))) AS can_cancel
@@ -706,7 +706,7 @@ def customer_view_flights():
 
      # Fetch previous flights
     previous_flights_query = '''
-        SELECT p.ticketID, f.airline_name, f.flight_num, f.departure_airport, f.arrival_airport, 
+        SELECT p.first_name, p.ticketID, f.airline_name, f.flight_num, f.departure_airport, f.arrival_airport, 
         f.departure_date, f.departure_time
         FROM purchase p, flight f, ticket t WHERE p.ticketID = t.ticketID AND 
         t.airline_name = f.airline_name AND
