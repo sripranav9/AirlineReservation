@@ -885,7 +885,7 @@ def staff_home():
 @app.route('/logout')
 def logout():
 	session.clear()
-	return redirect(url_for('home'))
+	return redirect(url_for('login_airline_staff'))
 
 @app.route('/view_flights')
 def view_flights():
