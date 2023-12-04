@@ -16,6 +16,7 @@
 	{% endif %}
     <table>
         <tr>
+            <th>First name</th>
             <th>Ticket ID</th>
             <th>Airline Name</th>
             <th>Flight Number</th>
@@ -27,6 +28,7 @@
         </tr>
         {% for flight in upcoming_flights %}
         <tr>
+            <td>{{ flight.first_name }}</td>
             <td>{{ flight.ticketID }}</td>
             <td>{{ flight.airline_name }}</td>
             <td>{{ flight.flight_num }}</td>
@@ -51,6 +53,7 @@
     <h2>Previous Flights</h2>
     <table>
         <tr>
+            <th>First Name</th>
             <th>Ticket ID</th>
             <th>Airline Name</th>
             <th>Flight Number</th>
@@ -61,6 +64,7 @@
         </tr>
         {% for flight in previous_flights %}
         <tr>
+            <td>{{ flight.first_name }}</td>
             <td>{{ flight.ticketID }}</td>
             <td>{{ flight.airline_name }}</td>
             <td>{{ flight.flight_num }}</td>
