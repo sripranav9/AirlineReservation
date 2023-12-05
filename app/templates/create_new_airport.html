@@ -16,6 +16,9 @@
 		<input type="radio" name="airport_type" value="both" required/> Both </br>
 		<input type="Submit" value = "Create New Airport"/>
 
+		{% if success %}
+			<p class="error"><strong>Success:</strong> {{success}}</p>
+		{% endif %}
 
 		{% if error %}
 			<p class="error"><strong>Error:</strong> {{error}}</p>
