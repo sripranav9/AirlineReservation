@@ -12,14 +12,13 @@ Our system is centered around providing a functional and efficient platform for 
 
 It's important to note that this project emphasizes backend functionality over frontend aesthetics. As such, the application is not extensively styled with CSS or other frontend technologies, as the primary objective is to demonstrate robust backend capabilities and effective database integration.
 
+## Features
 Key features include:
 - Functional interfaces for flight searches, ticket bookings, and user management.
 - Dedicated login and registration modules for enhanced security.
 - Comprehensive access to flight information for customers, including past, current, and future flights.
 - Extensive flight management options for airline staff, encompassing flight creation, status updates, and customer service.
-
-## Features
-[List the key features of your application.]
+- Saved flight selections for users not logged in, and many more!
 
 ### Group Members/ Contributers:
 [Sri Pranav Srivatsavai](mailto:sri.pranav@nyu.edu) | [Theo Welckle](mailto:tlw9927@nyu.edu)
