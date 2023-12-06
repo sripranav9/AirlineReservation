@@ -279,7 +279,7 @@ The following are the use cases for when a customer's login is authenticated.
     ```
     *Explanation: This function generates a ticket ID for each leg of the flight: checks for an existing ticket ID with the same randomly generated ID before returning the generated value. If there is a same ID number existing, the function will generate a new ticket ID.*
 
-  - Query 2: Add the data into the table
+  - Query 2: Add the customer data into tables `ticket` and `purchase`. Update the `flight` table.
     ```python
     # Add data to ticket table: Insert into ticket table first due to the foreign key references from Purchase to Ticket
     
