@@ -77,7 +77,7 @@ Key features include:
 ## Use Cases
 Here, list all the use cases of your application. For each use case, provide a brief description.
 
-### Public (No Users Logged In)
+### 1. Public (No Users Logged In)
 The following are the use cases for when no user is logged in.
 #### View Public Information
 - Description: Check flight status and search for future flights
@@ -108,7 +108,7 @@ The following are the use cases for when no user is logged in.
     ```
     *Explanation: [Explanation of the query.]*
 
-### Customer
+### 2. Customer
 The following are the use cases for when a customer's login is authenticated.
 #### [Use Case Heading]
 - **Description**: [Briefly describe what this use case does.]
@@ -126,7 +126,7 @@ The following are the use cases for when a customer's login is authenticated.
   - Query 2: `INSERT INTO ... VALUES (...)`
     - *Explanation*: [Explanation of the second query.]
 
-### Airline Staff
+### 3. Airline Staff
 The following are the use cases for when an airline staff member's login is authenticated.
 #### [Use Case Heading]
 - **Description**: [Briefly describe what this use case does.]
