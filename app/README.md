@@ -114,7 +114,7 @@ The following are the use cases for when a customer's login is authenticated.
     return render_template('customer-register.html', error = "This user already exists in the database. Try Logging in")
     ```
     *Explanation: If the user already exists, throw an error. Otherwise, proceed to process the other fields of the register form received.*
-  - Query 2: [Short Description]
+  - Query 2: Insert the values from the form into the respective tables in the database.
     ```python
     # ...
     insert_newcustomer_query = 'INSERT INTO customer VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
