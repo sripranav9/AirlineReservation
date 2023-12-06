@@ -93,6 +93,7 @@ The following are the use cases for when no user is logged in.
 		''', (origin_code, destination_code, departure_date))
     ```
     *Explanation: The query fetches all the required details from the `flight` table by checking for flights that are not cancelled and have atleast 1 available seat. The dynamic pricing follows the strategy where the ticket will cost 25% more than the base price if the flight capacity is above 80%. Then customer is then taken to the purchase page to continue. The same query is used to display the return flights as well.*
+
   - Query 2: Fetch the flight status based on the details from the form.
     ```python
     #paste the sql query from the flask app here
@@ -114,6 +115,7 @@ The following are the use cases for when a customer's login is authenticated.
     return render_template('customer-register.html', error = "This user already exists in the database. Try Logging in")
     ```
     *Explanation: If the user already exists, throw an error. Otherwise, proceed to process the other fields of the register form received.*
+
   - Query 2: Insert the values from the form into the respective tables in the database.
     ```python
     # ...
@@ -156,6 +158,7 @@ The following are the use cases for when a customer's login is authenticated.
     # ...
     ```
     *Explanation: Convert the password from the form into an **md5 hash** and fetch details from the `customer` table and begin a session while redirecting them to the Customer Home page. Also, handle the errors if the tuple does not exist.*
+
   - Query 2: Function to check valid customer login before every function.
     ```python
     def isNotValidCustomer():
@@ -205,6 +208,7 @@ The following are the use cases for when a customer's login is authenticated.
     '''
     ```
     *Explanation: The query checks for the system's current date and time to differentiate upcoming and previous flights. It fetches the details necessary for the customer to understand which flight they are looking at. There is an additional `can_cancel` attribute that decides whether there is more than 24 hours for the scheduled departure.*
+
   - Query 2: Fetch the previous flight details from `flight`, `purchase`, and `ticket` and order in ascending order of departure date and time.
     ```python
     previous_flights_query = '''
@@ -240,16 +244,75 @@ The following are the use cases for when a customer's login is authenticated.
 #### Purchase Tickets
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
-  - Query 1: [Short Description]
+  - Query 1: Display the selection of flights: Outbound and Inbound (if a round-trip is selected).
     ```python
-    #paste the sql query from the flask app here
+    details_selected_outbound_query = '''
+            SELECT *,
+            CAST(base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS DECIMAL(10,2)) AS dynamic_price
+            FROM flight
+            WHERE airline_name = %s AND flight_num = %s AND departure_date = %s AND departure_time = %s
+            AND available_seats > 0 AND flight_status != 'canceled'
+            '''
+    if selected_inbound:
+                inbound_details = selected_inbound.split('_')
+                details_selected_inbound_query = '''
+                SELECT *,
+                CAST(base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS DECIMAL(10,2)) AS dynamic_price
+                FROM flight
+                WHERE airline_name = %s AND flight_num = %s AND departure_date = %s AND departure_time = %s
+                AND available_seats > 0 AND flight_status != 'canceled'
+                '''
     ```
-    *Explanation: [Explanation of the query.]*
-  - Query 1: [Short Description]
+    *Explanation: The queries above are quite similar to the ones used for the search flights function. This is meant to give user a chance to see their final flight selection and confirm to continue to the payment method.*
+    
+  - Generate a unique TicketID
     ```python
-    #paste the sql query from the flask app here
+    def generate_ticket_id(cursor):
+    max_int = 2147483647  # Maximum value for a signed 4-byte integer
+    while True:
+        # Generate a random ticket ID
+        ticket_id = random.randint(1, max_int)
+        cursor.execute('SELECT ticketID FROM ticket WHERE ticketID = %s', (ticket_id))
+        result = cursor.fetchone()
+        if result is None:
+            return ticket_id
     ```
-    *Explanation: [Explanation of the query.]*
+    *Explanation: This function generates a ticket ID for each leg of the flight: checks for an existing ticket ID with the same randomly generated ID before returning the generated value. If there is a same ID number existing, the function will generate a new ticket ID.*
+
+  - Query 2: Add the data into the table
+    ```python
+    # Add data to ticket table: Insert into ticket table first due to the foreign key references from Purchase to Ticket
+    
+    # Insert into ticket table
+    ticket_insert_query = '''
+            INSERT INTO ticket (ticketID, airline_name, flight_num, departure_date, departure_time)
+            VALUES (%s, %s, %s, %s, %s)
+            '''
+
+    # Insert into purchase table: Check if the ticket is for the customer or someone else
+    if buying_for_others:
+        # Customer buying a ticket for someone else
+        purchase_insert_query = '''
+        INSERT INTO purchase (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time, amount_paid)
+        SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s, CURDATE(), CURTIME(), %s
+        FROM customer WHERE email_id = %s
+        '''
+    else:
+        # Customer buying a ticket for himself - Add data to purchase table
+        purchase_insert_query = '''
+        INSERT INTO purchase (ticketID, email_id, first_name, last_name, date_of_birth, card_type, card_num, name_on_card, expiration_date, purchase_date, purchase_time, amount_paid)
+        SELECT %s, %s, first_name, last_name, date_of_birth, %s, %s, %s, %s, CURDATE(), CURTIME(), %s
+        FROM customer WHERE email_id = %s
+        '''
+    
+    # Update available seats on flight table
+    update_seats_query = 'UPDATE flight SET available_seats = available_seats - 1 WHERE airline_name = %s AND flight_num = %s AND departure_date = %s AND departure_time = %s'
+
+    # Check if it's a return flight - inbound selected
+    if selected_inbound:
+      # ... (add data to the tables, similar queries as presented above)
+    ```
+    *Explanation: Handling the purchase query is by far the most important interaction from the customer's side. First, insert a tuple into the `ticket` table. This is done so that the foreign key references are adhered to, with regards to the `purchase` and `ticket` table. Before continuing to enter information into the `purchase` table, check if the customer is booking a ticket for himself or someone else, and then add the data accordingly. Lastly, now that the ticket is generated and customer details are entered into the table, update the number of seats on the `flight` table to reflect a customer booking. Use the transaction methods learnt to rollback all the changes if any errors occur during this process.*
 
 #### Cancel Ticket
 - **Description**: [Briefly describe what this use case does.]
