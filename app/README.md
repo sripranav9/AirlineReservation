@@ -141,16 +141,38 @@ The following are the use cases for when a customer's login is authenticated.
 #### Login
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
-  - Query 1: [Short Description]
+  - Query 1: Check for the tuple's existence in the `customer` table to verify the details.
     ```python
-    #paste the sql query from the flask app here
+    # ...
+    password = hashlib.md5(request.form['password'].encode()).hexdigest()
+    query = 'SELECT * FROM customer WHERE email_id = %s and pwd = %s'
+    cursor.execute(query, (email, password))
+    data = cursor.fetchone()
+    if(data):
+        # If tuple exists - create a session for the the user and login
+    else:
+      error = 'Invalid login or username'
+      return render_template('customer-login.html', error=error)
+    # ...
     ```
-    *Explanation: [Explanation of the query.]*
-  - Query 1: [Short Description]
+    *Explanation: Convert the password from the form into an **md5 hash** and fetch details from the `customer` table and begin a session while redirecting them to the Customer Home page. Also, handle the errors if the tuple does not exist.*
+  - Query 2: Function to check valid customer login before every function.
     ```python
-    #paste the sql query from the flask app here
+    def isNotValidCustomer():
+      if(len(session) == 0): return True # No pair in session dictionary i.e. no session created yet
+      if(session['email'] is None): return True 
+      if(session['password'] is None): return True
+      email = session['email']
+      password = session['password']
+      cursor = conn.cursor()
+      query = 'SELECT * FROM customer WHERE email_id = %s and pwd = %s'
+      cursor.execute(query, (email, password))
+      data = cursor.fetchone()
+      cursor.close()
+      if(data is None): return True
+      return False
     ```
-    *Explanation: [Explanation of the query.]*
+    *Explanation: This function will be called in all the customer use cases to ensure legit access and implementation of the functions.*
 
 #### Logout
 - **Description**: [Briefly describe what this use case does.]
