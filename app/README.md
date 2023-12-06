@@ -94,6 +94,8 @@ The following are the use cases for when no user is logged in.
     ```
     *Explanation: The query fetches all the required details from the `flight` table by checking for flights that are not cancelled and have atleast 1 available seat. The dynamic pricing follows the strategy where the ticket will cost 25% more than the base price if the flight capacity is above 80%. Then customer is then taken to the purchase page to continue. The same query is used to display the return flights as well.*
 
+  - The web application will route the customer to a customer login page if the user tries to purchase a ticket without logging in. The flight selection will be saved for the customer's purchase view after log in is authenticated.
+
   - Query 2: Fetch the flight status based on the details from the form.
     ```python
     #paste the sql query from the flask app here
