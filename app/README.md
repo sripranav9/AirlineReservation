@@ -105,18 +105,38 @@ The following are the use cases for when no user is logged in.
 The following are the use cases for when a customer's login is authenticated.
 
 #### Register
-- **Description**: [Briefly describe what this use case does.]
+- **Description**: Fetch details from the database, verify and add a new user if the checks are passed. The username and password will be used for logging in, and the password is saved in an **md5 hash format**.
 - **SQL Queries**:
-  - Query 1: [Short Description]
+  - Query 1: Check if the email already exists and throw an error if it does.
     ```python
-    #paste the sql query from the flask app here
+    query = 'SELECT * FROM customer WHERE email_id = %s'
+    # ...
+    return render_template('customer-register.html', error = "This user already exists in the database. Try Logging in")
     ```
-    *Explanation: [Explanation of the query.]*
-  - Query 1: [Short Description]
+    *Explanation: If the user already exists, throw an error. Otherwise, proceed to process the other fields of the register form received.*
+  - Query 2: [Short Description]
     ```python
-    #paste the sql query from the flask app here
+    # ...
+    insert_newcustomer_query = 'INSERT INTO customer VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        
+        try:
+            cursor.execute(insert_newcustomer_query, (
+                customer_email, first_name, last_name, customer_password, 
+                building_num, street_name, apt_num, city, state, zip_code, 
+                passport_num, passport_country, passport_expiry, date_of_birth,
+            ))
+            phone_numbers = request.form.getlist('customer_phone[]')
+            insert_phone_query = 'INSERT INTO customer_phone VALUES(%s, %s)'
+            phone_already_query = 'SELECT * from customer_phone where email_id = %s and phone_num = %s'
+            for phone in phone_numbers:
+                if(phone == ''): continue
+                cursor.execute(phone_already_query, (customer_email, phone))
+                phoneExists = cursor.fetchone();
+                if(phoneExists is None):
+                    cursor.execute(insert_phone_query, (customer_email, phone))
+    # ...
     ```
-    *Explanation: [Explanation of the query.]*
+    *Explanation: The queries above are responsible for inserting the values from the form into the `customer` and `customer_phone` table, and only adds a phone number after checking for duplicates. The flask application uses the try, except, and finally methods to add data to enhance the efficiency of the transaction.*
 
 #### Login
 - **Description**: [Briefly describe what this use case does.]
