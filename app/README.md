@@ -113,18 +113,30 @@ The following are the use cases for when a customer's login is authenticated.
 #### [Use Case Heading]
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
-  - Query 1: `SELECT ... FROM ... WHERE ...`
-    - *Explanation*: [Explain what this query does and why it's used in this context.]
-  - Query 2: `INSERT INTO ... VALUES (...)`
-    - *Explanation*: [Explanation of the second query.]
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
 
 #### [Use Case Heading]
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
-  - Query 1: `SELECT ... FROM ... WHERE ...`
-    - *Explanation*: [Explain what this query does and why it's used in this context.]
-  - Query 2: `INSERT INTO ... VALUES (...)`
-    - *Explanation*: [Explanation of the second query.]
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
 
 ### 3. Airline Staff
 The following are the use cases for when an airline staff member's login is authenticated.
