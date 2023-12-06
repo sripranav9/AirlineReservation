@@ -78,6 +78,38 @@ Key features include:
 Here, list all the use cases of your application. For each use case, provide a brief description.
 
 ### Public (No Users Logged In)
+The following are the use cases for when no user is logged in.
+#### View Public Information
+- Description: Check flight status and search for future flights
+- SQL Queries:
+  - Query 1: Fetch details from `flight` and show a dynamic price based on the available seats.
+    ```python
+    cursor.execute('''
+        SELECT *,
+        CAST(base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS DECIMAL(10,2)) AS dynamic_price
+        FROM flight
+        WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s 
+        AND available_seats > 0 AND flight_status != 'canceled'
+		''', (origin_code, destination_code, departure_date))
+    ```
+    *Explanation: The query fetches all the required details from the `flight` table by checking for flights that are not cancelled and have atleast 1 available seat. The dynamic pricing follows the strategy where the ticket will cost 25% more than the base price if the flight capacity is above 80%.*
+  - Query 2: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+
+#### [Use Case Heading]
+- **Description**: [Briefly describe what this use case does.]
+- **SQL Queries**:
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+
+### Customer
+The following are the use cases for when a customer's login is authenticated.
 #### [Use Case Heading]
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
@@ -94,39 +126,35 @@ Here, list all the use cases of your application. For each use case, provide a b
   - Query 2: `INSERT INTO ... VALUES (...)`
     - *Explanation*: [Explanation of the second query.]
 
-### Customer (Login Authenticated)
+### Airline Staff
+The following are the use cases for when an airline staff member's login is authenticated.
 #### [Use Case Heading]
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
-  - Query 1: `SELECT ... FROM ... WHERE ...`
-    - *Explanation*: [Explain what this query does and why it's used in this context.]
-  - Query 2: `INSERT INTO ... VALUES (...)`
-    - *Explanation*: [Explanation of the second query.]
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+  - Query 2: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
 
 #### [Use Case Heading]
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
-  - Query 1: `SELECT ... FROM ... WHERE ...`
-    - *Explanation*: [Explain what this query does and why it's used in this context.]
-  - Query 2: `INSERT INTO ... VALUES (...)`
-    - *Explanation*: [Explanation of the second query.]
-
-### Airline Staff (Login Authenticated)
-#### [Use Case Heading]
-- **Description**: [Briefly describe what this use case does.]
-- **SQL Queries**:
-  - Query 1: `SELECT ... FROM ... WHERE ...`
-    - *Explanation*: [Explain what this query does and why it's used in this context.]
-  - Query 2: `INSERT INTO ... VALUES (...)`
-    - *Explanation*: [Explanation of the second query.]
-
-#### [Use Case Heading]
-- **Description**: [Briefly describe what this use case does.]
-- **SQL Queries**:
-  - Query 1: `SELECT ... FROM ... WHERE ...`
-    - *Explanation*: [Explain what this query does and why it's used in this context.]
-  - Query 2: `INSERT INTO ... VALUES (...)`
-    - *Explanation*: [Explanation of the second query.]
+  - Query 2: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+  - Query 2: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
 
 
 ## Additional Features
