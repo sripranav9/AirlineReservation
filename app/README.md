@@ -92,7 +92,7 @@ The following are the use cases for when no user is logged in.
         AND available_seats > 0 AND flight_status != 'canceled'
 		''', (origin_code, destination_code, departure_date))
     ```
-    *Explanation: The query fetches all the required details from the `flight` table by checking for flights that are not cancelled and have atleast 1 available seat. The dynamic pricing follows the strategy where the ticket will cost 25% more than the base price if the flight capacity is above 80%.*
+    *Explanation: The query fetches all the required details from the `flight` table by checking for flights that are not cancelled and have atleast 1 available seat. The dynamic pricing follows the strategy where the ticket will cost 25% more than the base price if the flight capacity is above 80%. Then customer is then taken to the purchase page to continue. The same query is used to display the return flights as well.*
   - Query 2: Fetch the flight status based on the details from the form.
     ```python
     #paste the sql query from the flask app here
@@ -204,7 +204,7 @@ The following are the use cases for when a customer's login is authenticated.
         ORDER BY departure_date ASC, departure_time ASC
     '''
     ```
-    *Explanation: The query checks for the system's current date and time to differentiate upcoming and previous flights. It fetches the details necessary for the customer to understand which flight they are looking at.*
+    *Explanation: The query checks for the system's current date and time to differentiate upcoming and previous flights. It fetches the details necessary for the customer to understand which flight they are looking at. There is an additional `can_cancel` attribute that decides whether there is more than 24 hours for the scheduled departure.*
   - Query 2: Fetch the previous flight details from `flight`, `purchase`, and `ticket` and order in ascending order of departure date and time.
     ```python
     previous_flights_query = '''
@@ -225,16 +225,17 @@ The following are the use cases for when a customer's login is authenticated.
 #### Search for Flights
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
-  - Query 1: [Short Description]
+  - Query 1: Fetch details from `flight` and show a dynamic price based on the available seats.
     ```python
-    #paste the sql query from the flask app here
+    cursor.execute('''
+        SELECT *,
+        CAST(base_price_ticket * IF(((total_seats - available_seats) / total_seats) >= 0.8, 1.25, 1) AS DECIMAL(10,2)) AS dynamic_price
+        FROM flight
+        WHERE departure_airport = %s AND arrival_airport = %s AND departure_date = %s 
+        AND available_seats > 0 AND flight_status != 'canceled'
+		''', (origin_code, destination_code, departure_date))
     ```
-    *Explanation: [Explanation of the query.]*
-  - Query 1: [Short Description]
-    ```python
-    #paste the sql query from the flask app here
-    ```
-    *Explanation: [Explanation of the query.]*
+    *Explanation: The query fetches all the required details from the `flight` table by checking for flights that are not cancelled and have atleast 1 available seat. The dynamic pricing follows the strategy where the ticket will cost 25% more than the base price if the flight capacity is above 80%. Then customer is then taken to the purchase page to continue. The same query is used to display the return flights as well.*
 
 #### Purchase Tickets
 - **Description**: [Briefly describe what this use case does.]
