@@ -106,7 +106,7 @@ The following are the use cases for when no user is logged in.
 The following are the use cases for when a customer's login is authenticated.
 
 #### i. Register
-- **Description**: Fetch details from the database, verify and add a new user if the checks are passed. The username and password will be used for logging in, and the password is saved in an **md5 hash format**.
+- **Description**: The customer will be able to create a new account by opting to register. The username and password provided will be used for logging in, and the password is saved in an **md5 hash format** in the database.
 - **SQL Queries**:
   - Query 1: Check if the email already exists and throw an error if it does.
     ```python
@@ -141,7 +141,7 @@ The following are the use cases for when a customer's login is authenticated.
     *Explanation: The queries above are responsible for inserting the values from the form into the `customer` and `customer_phone` table, and only adds a phone number after checking for duplicates. The flask application uses the try, except, and finally methods to add data to enhance the efficiency of the transaction.*
 
 #### ii. Login
-- **Description**: [Briefly describe what this use case does.]
+- **Description**: The customer will be able to login to the system if they provide the correct login details, else will be presented with an error.
 - **SQL Queries**:
   - Query 1: Check for the tuple's existence in the `customer` table to verify the details.
     ```python
@@ -227,7 +227,7 @@ The following are the use cases for when a customer's login is authenticated.
     *Explanation: The query checks for the system's current date and time to differentiate upcoming and previous flights. It fetches the details necessary for the customer to understand which flight they are looking at.*
 
 #### v. Search for Flights
-- **Description**: [Briefly describe what this use case does.]
+- **Description**: The customer will be able to search for flights, similar to the use case mentioned in the [Public](#1-public-no-users-logged-in) section.
 - **SQL Queries**:
   - Query 1: Fetch details from `flight` and show a dynamic price based on the available seats.
     ```python
@@ -242,7 +242,7 @@ The following are the use cases for when a customer's login is authenticated.
     *Explanation: The query fetches all the required details from the `flight` table by checking for flights that are not cancelled and have atleast 1 available seat. The dynamic pricing follows the strategy where the ticket will cost 25% more than the base price if the flight capacity is above 80%. Then customer is then taken to the purchase page to continue. The same query is used to display the return flights as well.*
 
 #### vi. Purchase Tickets
-- **Description**: [Briefly describe what this use case does.]
+- **Description**: The customer will be able to purchase a ticket for himself or other people (1 ticket at once) for the flights that have atleast 1 available seat, and are not having a canceled status.
 - **SQL Queries**:
   - Query 1: Display the selection of flights: Outbound and Inbound (if a round-trip is selected).
     ```python
@@ -315,7 +315,7 @@ The following are the use cases for when a customer's login is authenticated.
     *Explanation: Handling the purchase query is by far the most important interaction from the customer's side. First, insert a tuple into the `ticket` table. This is done so that the foreign key references are adhered to, with regards to the `purchase` and `ticket` table. Before continuing to enter information into the `purchase` table, check if the customer is booking a ticket for himself or someone else, and then add the data accordingly. Lastly, now that the ticket is generated and customer details are entered into the table, update the number of seats on the `flight` table to reflect a customer booking. Use the transaction methods learnt to rollback all the changes if any errors occur during this process.*
 
 #### vii. Cancel Ticket
-- **Description**: [Briefly describe what this use case does.]
+- **Description**: The customer will be able to cancel their ticket anytime before the flight as long as the scheduled departure is more than 24 hours away. Measures are taken both on the front-end and back-end to prevent rating flights before the arrival time.
 - **SQL Queries**:
   - Query 1: Double-check if the ticket can be cancelled (adhere to the 24 hours policy).
     ```python
@@ -370,7 +370,7 @@ The following are the use cases for when a customer's login is authenticated.
     *Explanation: Add an available seat to the flight since a customer has now cancelled the ticket. Follow an efficient transaction method to prevent any unexpected errors in the database.*
 
 #### viii. Rate and Comment on Previous Flights
-- **Description**: [Briefly describe what this use case does.]
+- **Description**: The customer will be able to rate and comment on the flights that he or the person he booked the flight for, had taken. Measures are taken both on the front-end and back-end to prevent rating flights before the arrival time.
 - **SQL Queries**:
   - Query 1: Display all the previous flights that the customer has not rated yet.
     ```python
@@ -409,7 +409,7 @@ The following are the use cases for when a customer's login is authenticated.
     *Explanation: Once the checks are done above, the rating (a number between 1 to 5) and a comment will be passed to the database's `review` table.*
 
 #### ix. Track my Spending
-- **Description**: [Briefly describe what this use case does.]
+- **Description**: The customer will be able to track the overall spending in the past year, with an additional default view of monthly spending for the last 6 months. The view changes when the customer wishes to enter a date range and view the transactions within that range (total amount and monthly spending).
 - **SQL Queries**:
   - Query 1: Fetch the total amount in the last 1 year.
     ```python
@@ -462,7 +462,7 @@ The following are the use cases for when a customer's login is authenticated.
     *Explanation: Validate the date range given by the customer and show the total value of amount spent within the given range, and display a month-wise spending amounts table within the given range.*
 
 #### x. View all Purchases
-- **Description**: [Briefly describe what this use case does.]
+- **Description**: The customer will be able to view all the details associated with their purchases made with the account.
 - **SQL Queries**:
   - Query 1: Fetch the ticket and purchase details to display all the purchases of the customer.
     ```python
@@ -486,7 +486,7 @@ The following are the use cases for when a customer's login is authenticated.
 
 ### 3. Airline Staff
 The following are the use cases for when an airline staff member's login is authenticated.
-#### [Use Case Heading]
+#### i. [Use Case Heading]
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
   - Query 1: [Short Description]
@@ -500,7 +500,7 @@ The following are the use cases for when an airline staff member's login is auth
     ```
     *Explanation: [Explanation of the query.]*
 
-#### [Use Case Heading]
+#### ii. [Use Case Heading]
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
   - Query 2: [Short Description]
