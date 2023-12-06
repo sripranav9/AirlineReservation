@@ -359,16 +359,24 @@ The following are the use cases for when a customer's login is authenticated.
 #### View all Purchases
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
-  - Query 1: [Short Description]
+  - Query 1: Fetch the ticket and purchase details to display all the purchases of the customer.
     ```python
-    #paste the sql query from the flask app here
+     # Query to get the Purchase History and connected Ticket data
+    spending_history_query = '''
+            SELECT p.ticketID, p.amount_paid, p.purchase_date, p.purchase_time, 
+            t.airline_name, t.flight_num ,t.departure_date, t.departure_time 
+            FROM `purchase` as p ,`ticket` as t 
+            WHERE t.ticketID = p.ticketID AND p.email_id = %s
+            ORDER BY purchase_date DESC, purchase_time DESC;
+            '''
     ```
-    *Explanation: [Explanation of the query.]*
-  - Query 1: [Short Description]
+    *Explanation: This query fetches all the relevant details needed by the customer while viewing all the transactions through the account before viewing the total amount.*
+  - Query 2: Fetch the total amount spent by the customer since the creation of the account.
     ```python
-    #paste the sql query from the flask app here
+    # Query to get the total amount spent by the customer in session
+    total_spent_query = 'SELECT SUM(amount_paid) AS total_amount FROM `purchase` WHERE email_id = %s'
     ```
-    *Explanation: [Explanation of the query.]*
+    *Explanation: Fetches the total amount spent by the customer without any filters, and displays all the transactions associated with the account (email_id).*
 
 
 ### 3. Airline Staff
