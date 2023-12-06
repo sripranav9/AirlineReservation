@@ -93,38 +93,56 @@ The following are the use cases for when no user is logged in.
 		''', (origin_code, destination_code, departure_date))
     ```
     *Explanation: The query fetches all the required details from the `flight` table by checking for flights that are not cancelled and have atleast 1 available seat. The dynamic pricing follows the strategy where the ticket will cost 25% more than the base price if the flight capacity is above 80%.*
-  - Query 2: [Short Description]
+  - Query 2: Fetch the flight status based on the details from the form.
     ```python
     #paste the sql query from the flask app here
     ```
-    *Explanation: [Explanation of the query.]*
 
-#### [Use Case Heading]
-- **Description**: [Briefly describe what this use case does.]
-- **SQL Queries**:
-  - Query 1: [Short Description]
-    ```python
-    #paste the sql query from the flask app here
-    ```
-    *Explanation: [Explanation of the query.]*
+#### Login and Register
+- **Description and SQL Queries**: The login and register modules for [customers](#2-customer) and [airline staff](#3-airline-staff) will be explained in the respective use case groups.
 
 ### 2. Customer
 The following are the use cases for when a customer's login is authenticated.
-#### [Use Case Heading]
-- **Description**: [Briefly describe what this use case does.]
-- **SQL Queries**:
-  - Query 1: [Short Description]
-    ```python
-    #paste the sql query from the flask app here
-    ```
-    *Explanation: [Explanation of the query.]*
-  - Query 1: [Short Description]
-    ```python
-    #paste the sql query from the flask app here
-    ```
-    *Explanation: [Explanation of the query.]*
 
-#### [Use Case Heading]
+#### View my Flights
+- **Description**: Fetch the upcoming flights and previous flights of the customer. Provide an option to cancel the flight if the scheduled departure is more than 24 hours (discussed in the 'Cancel flight' use case).
+- **SQL Queries**:
+  - Query 1: Fetch the upcoming flight details from `flight`, `purchase`, and `ticket` and order in descending order of departure date and time.
+    ```python
+    upcoming_flights_query = '''
+        SELECT p.first_name, p.ticketID, f.airline_name, f.flight_num, f.departure_airport, f.arrival_airport, 
+        f.departure_date, f.departure_time,
+        (f.departure_date > CURRENT_DATE() OR 
+        (f.departure_date = CURRENT_DATE() AND f.departure_time > ADDTIME(CURRENT_TIME(), '24:00:00'))) AS can_cancel
+        FROM purchase p, flight f, ticket t WHERE p.ticketID = t.ticketID AND 
+        t.airline_name = f.airline_name AND
+        t.flight_num = f.flight_num AND
+        t.departure_date = f.departure_date AND
+        t.departure_time = f.departure_time AND
+        p.email_id = %s
+        AND f.departure_date >= CURRENT_DATE()
+        ORDER BY departure_date ASC, departure_time ASC
+    '''
+    ```
+    *Explanation: The query checks for the system's current date and time to differentiate upcoming and previous flights. It fetches the details necessary for the customer to understand which flight they are looking at.*
+  - Query 2: Fetch the previous flight details from `flight`, `purchase`, and `ticket` and order in ascending order of departure date and time.
+    ```python
+    previous_flights_query = '''
+        SELECT p.first_name, p.ticketID, f.airline_name, f.flight_num, f.departure_airport, f.arrival_airport, 
+        f.departure_date, f.departure_time
+        FROM purchase p, flight f, ticket t WHERE p.ticketID = t.ticketID AND 
+        t.airline_name = f.airline_name AND
+        t.flight_num = f.flight_num AND
+        t.departure_date = f.departure_date AND
+        t.departure_time = f.departure_time AND
+        p.email_id = %s
+        AND f.departure_date < CURRENT_DATE()
+        ORDER BY departure_date DESC, departure_time DESC
+    '''
+    ```
+    *Explanation: The query checks for the system's current date and time to differentiate upcoming and previous flights. It fetches the details necessary for the customer to understand which flight they are looking at.*
+
+#### Search for Flights
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
   - Query 1: [Short Description]
