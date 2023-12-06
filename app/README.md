@@ -317,16 +317,57 @@ The following are the use cases for when a customer's login is authenticated.
 #### Cancel Ticket
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
-  - Query 1: [Short Description]
+  - Query 1: Double-check if the ticket can be cancelled (adhere to the 24 hours policy).
     ```python
-    #paste the sql query from the flask app here
+    # Check if the flight is more than 24 hours away
+    # (Double checking in the back-end too. Already blocked in the front-end)
+    query = '''
+    SELECT
+        (f.departure_date > CURRENT_DATE() OR 
+        (f.departure_date = CURRENT_DATE() AND f.departure_time > ADDTIME(CURRENT_TIME(), '24:00:00'))) AS can_cancel
+        FROM purchase p, flight f, ticket t WHERE p.ticketID = t.ticketID AND 
+        t.airline_name = f.airline_name AND
+        t.flight_num = f.flight_num AND
+        t.departure_date = f.departure_date AND
+        t.departure_time = f.departure_time AND
+        p.ticketID = %s AND p.email_id = %s
+        AND f.departure_date >= CURRENT_DATE()
+    '''
+    cursor.execute(query, (ticket_id_to_cancel, customer_email))
+    can_cancel = cursor.fetchone()
+
+    if can_cancel and (can_cancel['can_cancel'] == 1):
+      # ... (will be discussed in Query 2)
+    else:
+      error = "Flight cannot be cancelled within 24 hours of departure."
+      return render_template('customer-view-flights.html', error=error)
     ```
-    *Explanation: [Explanation of the query.]*
-  - Query 1: [Short Description]
+    *Explanation: Checks if the ticket can be cancelled by checking if the difference between the current time and the departure time is more than 24 hours. Else, an error will be thrown.*
+
+  - Query 2: 
     ```python
-    #paste the sql query from the flask app here
+    if can_cancel and (can_cancel['can_cancel'] == 1):
+        # Delete the data from purchase and ticket table in the same order
+        cursor.execute('DELETE FROM purchase WHERE ticketID = %s AND email_id = %s', (ticket_id_to_cancel, customer_email))
+        cursor.execute('DELETE FROM ticket WHERE ticketID = %s', (ticket_id_to_cancel))
     ```
-    *Explanation: [Explanation of the query.]*
+    *Explanation: Delete the data from the tables to cancel the ticket, and adhere to the foreign key constraints of the tables while following this process. Follow an efficient transaction method to prevent any unexpected errors in the database.*
+
+  - Query 3: 
+    ```python
+    if can_cancel and (can_cancel['can_cancel'] == 1):
+        # Add 1 available_seat to the flight
+        update_seats_query = '''
+        UPDATE flight f
+            JOIN ticket t ON f.airline_name = t.airline_name 
+            AND f.flight_num = t.flight_num 
+            AND f.departure_date = t.departure_date 
+            AND f.departure_time = t.departure_time
+        SET f.available_seats = f.available_seats + 1
+        WHERE t.ticketID = %s;
+        '''
+    ```
+    *Explanation: Add an available seat to the flight since a customer has now cancelled the ticket. Follow an efficient transaction method to prevent any unexpected errors in the database.*
 
 #### Rate and Comment on Previous Flights
 - **Description**: [Briefly describe what this use case does.]
