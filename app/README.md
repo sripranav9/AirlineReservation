@@ -345,16 +345,55 @@ The following are the use cases for when a customer's login is authenticated.
 #### Track my Spending
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
-  - Query 1: [Short Description]
+  - Query 1: Fetch the total amount in the last 1 year.
     ```python
-    #paste the sql query from the flask app here
+    # Query to get the total amount spent by the customer in the last 1 year
+    total_spent_past_year_query = '''
+        SELECT SUM(amount_paid) AS total_amount
+        FROM `purchase`
+        WHERE email_id = %s AND purchase_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND CURDATE()
+    '''
     ```
-    *Explanation: [Explanation of the query.]*
-  - Query 1: [Short Description]
+    *Explanation: Fetches the total amount spent in the past year by using the `CURDATE()` function to compare the system date and the purchase dates recorded in the database.*
+
+  - Query 2: Fetch month-wise spending amounts for the past 6 months.
     ```python
-    #paste the sql query from the flask app here
+    # Query to get the month-wise spending for the last six months
+    monthly_spending_query = '''
+        SELECT MONTHNAME(purchase_date) AS month, YEAR(purchase_date) AS year, 
+            SUM(amount_paid) AS total_amount 
+        FROM purchase 
+        WHERE email_id = %s AND 
+            purchase_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND CURDATE() 
+        GROUP BY month, year 
+        ORDER BY year, month DESC;
+    '''
     ```
-    *Explanation: [Explanation of the query.]*
+    *Explanation: Fetches the total amounts grouped by the previous 6 months using similar logic as Query 1 to display the data.*
+
+  - Query 3: Fetch the total amount and spending data within a given date range.
+    ```python
+     # If both start_date and end_date are provided, fetch the data within the range
+    if start_date and end_date:
+        # Total amount spent in the date range
+        amount_in_date_range_query = '''
+            SELECT SUM(amount_paid) AS total_amount
+            FROM `purchase`
+            WHERE email_id = %s AND purchase_date BETWEEN %s AND %s
+        '''
+
+    # Month wise spending in the date range
+        date_range_monthly_spending_query = '''
+        SELECT MONTHNAME(purchase_date) AS month, YEAR(purchase_date) AS year, 
+            SUM(amount_paid) AS total_amount 
+        FROM purchase 
+        WHERE email_id = %s AND 
+            purchase_date BETWEEN %s and %s 
+        GROUP BY month, year 
+        ORDER BY year, month DESC;
+        '''
+    ```
+    *Explanation: Validate the date range given by the customer and show the total value of amount spent within the given range, and display a month-wise spending amounts table within the given range.*
 
 #### View all Purchases
 - **Description**: [Briefly describe what this use case does.]
