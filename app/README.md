@@ -6,7 +6,17 @@ Professor Ratan Dey <br/>
 Fall 2023 <br/>
 
 ## Introduction
-Briefly describe your application, its purpose, and its main functionalities.
+Air Ticket Reservation System is a project undertaken for the Intro to Databases course (CS-UY 3083) at New York University, Tandon School of Engineering, guided by Professor Ratan Dey during the Fall 2023 semester. This project is meant to provide a hands-on experience in developing a relational database and a backend-driven web application.
+
+Our system is centered around providing a functional and efficient platform for air ticket reservation, primarily focusing on backend database implementation. The project serves two main user groups: Customers and Airline Staff. While Customers have the ability to search for flights, book tickets, and manage their reservations, Airline Staff are enabled to handle flight details, update statuses, and manage customer interactions.
+
+It's important to note that this project emphasizes backend functionality over frontend aesthetics. As such, the application is not extensively styled with CSS or other frontend technologies, as the primary objective is to demonstrate robust backend capabilities and effective database integration.
+
+Key features include:
+- Functional interfaces for flight searches, ticket bookings, and user management.
+- Dedicated login and registration modules for enhanced security.
+- Comprehensive access to flight information for customers, including past, current, and future flights.
+- Extensive flight management options for airline staff, encompassing flight creation, status updates, and customer service.
 
 ## Features
 [List the key features of your application.]
