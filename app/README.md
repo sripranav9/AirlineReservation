@@ -79,7 +79,7 @@ Here, list all the use cases of your application. For each use case, provide a b
 
 ### 1. Public (No Users Logged In)
 The following are the use cases for when no user is logged in.
-#### View Public Information
+#### i. View Public Information
 - Description: Check flight status and search for future flights
 - SQL Queries:
   - Query 1: Fetch details from `flight` and show a dynamic price based on the available seats.
@@ -99,13 +99,13 @@ The following are the use cases for when no user is logged in.
     #paste the sql query from the flask app here
     ```
 
-#### Login and Register
+#### ii. Login and Register
 - **Description and SQL Queries**: The login and register modules for [customers](#2-customer) and [airline staff](#3-airline-staff) will be explained in the respective use case groups.
 
 ### 2. Customer
 The following are the use cases for when a customer's login is authenticated.
 
-#### Register
+#### i. Register
 - **Description**: Fetch details from the database, verify and add a new user if the checks are passed. The username and password will be used for logging in, and the password is saved in an **md5 hash format**.
 - **SQL Queries**:
   - Query 1: Check if the email already exists and throw an error if it does.
@@ -140,7 +140,7 @@ The following are the use cases for when a customer's login is authenticated.
     ```
     *Explanation: The queries above are responsible for inserting the values from the form into the `customer` and `customer_phone` table, and only adds a phone number after checking for duplicates. The flask application uses the try, except, and finally methods to add data to enhance the efficiency of the transaction.*
 
-#### Login
+#### ii. Login
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
   - Query 1: Check for the tuple's existence in the `customer` table to verify the details.
@@ -177,7 +177,7 @@ The following are the use cases for when a customer's login is authenticated.
     ```
     *Explanation: This function will be called in all the customer use cases to ensure legit access and implementation of the functions.*
 
-#### Logout
+#### iii. Logout
 - **Description**: Log out the user by deleting all the session data and displaying the login page.
 - **SQL Queries**:
   - This function does not need any SQL queries.
@@ -187,7 +187,7 @@ The following are the use cases for when a customer's login is authenticated.
     ```
     *Explanation: The session data is deleted so that there are no conflicts when a new user logs in.*
 
-#### View my Flights
+#### iv. View my Flights
 - **Description**: Fetch the upcoming flights and previous flights of the customer. Provide an option to cancel the flight if the scheduled departure is more than 24 hours (discussed in the 'Cancel Ticket' use case).
 - **SQL Queries**:
   - Query 1: Fetch the upcoming flight details from `flight`, `purchase`, and `ticket` and order in descending order of departure date and time.
@@ -226,7 +226,7 @@ The following are the use cases for when a customer's login is authenticated.
     ```
     *Explanation: The query checks for the system's current date and time to differentiate upcoming and previous flights. It fetches the details necessary for the customer to understand which flight they are looking at.*
 
-#### Search for Flights
+#### v. Search for Flights
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
   - Query 1: Fetch details from `flight` and show a dynamic price based on the available seats.
@@ -241,7 +241,7 @@ The following are the use cases for when a customer's login is authenticated.
     ```
     *Explanation: The query fetches all the required details from the `flight` table by checking for flights that are not cancelled and have atleast 1 available seat. The dynamic pricing follows the strategy where the ticket will cost 25% more than the base price if the flight capacity is above 80%. Then customer is then taken to the purchase page to continue. The same query is used to display the return flights as well.*
 
-#### Purchase Tickets
+#### vi. Purchase Tickets
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
   - Query 1: Display the selection of flights: Outbound and Inbound (if a round-trip is selected).
@@ -314,7 +314,7 @@ The following are the use cases for when a customer's login is authenticated.
     ```
     *Explanation: Handling the purchase query is by far the most important interaction from the customer's side. First, insert a tuple into the `ticket` table. This is done so that the foreign key references are adhered to, with regards to the `purchase` and `ticket` table. Before continuing to enter information into the `purchase` table, check if the customer is booking a ticket for himself or someone else, and then add the data accordingly. Lastly, now that the ticket is generated and customer details are entered into the table, update the number of seats on the `flight` table to reflect a customer booking. Use the transaction methods learnt to rollback all the changes if any errors occur during this process.*
 
-#### Cancel Ticket
+#### vii. Cancel Ticket
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
   - Query 1: Double-check if the ticket can be cancelled (adhere to the 24 hours policy).
@@ -369,7 +369,7 @@ The following are the use cases for when a customer's login is authenticated.
     ```
     *Explanation: Add an available seat to the flight since a customer has now cancelled the ticket. Follow an efficient transaction method to prevent any unexpected errors in the database.*
 
-#### Rate and Comment on Previous Flights
+#### viii. Rate and Comment on Previous Flights
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
   - Query 1: Display all the previous flights that the customer has not rated yet.
@@ -408,7 +408,7 @@ The following are the use cases for when a customer's login is authenticated.
     ```
     *Explanation: Once the checks are done above, the rating (a number between 1 to 5) and a comment will be passed to the database's `review` table.*
 
-#### Track my Spending
+#### ix. Track my Spending
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
   - Query 1: Fetch the total amount in the last 1 year.
@@ -461,7 +461,7 @@ The following are the use cases for when a customer's login is authenticated.
     ```
     *Explanation: Validate the date range given by the customer and show the total value of amount spent within the given range, and display a month-wise spending amounts table within the given range.*
 
-#### View all Purchases
+#### x. View all Purchases
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
   - Query 1: Fetch the ticket and purchase details to display all the purchases of the customer.
