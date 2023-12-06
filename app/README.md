@@ -526,4 +526,13 @@ Please contact [Pranav](mailto:sri.pranav@nyu.edu) or [Theo](mailto:tlw9927@nyu.
  - [Sri Pranav Srivatsavai](mailto:sri.pranav@nyu.edu)
  - [Theo Welckle](mailto:tlw9927@nyu.edu)
 
+## References and Acknowledgements
+
+This project benefited from a range of supportive resources, ensuring a thorough understanding and effective problem-solving:
+
+- **AI Tools**: We occasionally used AI tools for debugging and to gain insights into how similar features are implemented in industry applications. These tools were not used to complete the primary educational objectives of this project but rather to assist in specific syntax challenges (mainly Flask and Jinja2) we faced during the course of our project.
+
+- **Online Communities**: Platforms like Stack Overflow were helpful for solving specific coding challenges.
+
+The core development and problem-solving were carried out independently by us. We believe in the ethical and responsible use of such resources, ensuring they complement our learning without overshadowing the primary educational objectives of this project.
 
