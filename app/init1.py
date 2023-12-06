@@ -935,7 +935,7 @@ def staff_home():
 @app.route('/logout')
 def logout():
 	session.clear()
-	return redirect(url_for('home'))
+	return redirect(url_for('login_airline_staff'))
 
 @app.route('/view_flights')
 def view_flights():
@@ -1267,8 +1267,8 @@ def createNewAirport():
 		cursor.execute(new_airport_insert, (airport_code, airport_name, airport_city, airport_city, airport_terminals, airport_type))
 		conn.commit();
 		cursor.close();
-		error = 'Airport ' + airport_code + ' has Successfully been created'
-		return render_template('create_new_airport.html', error = error)
+		success = 'Airport ' + airport_code + ' has Successfully been created'
+		return render_template('create_new_airport.html', success = success)
 
 @app.route('/search_flight_ratings', methods=['GET', 'POST'])
 def search_flight_ratings():
