@@ -331,16 +331,41 @@ The following are the use cases for when a customer's login is authenticated.
 #### Rate and Comment on Previous Flights
 - **Description**: [Briefly describe what this use case does.]
 - **SQL Queries**:
-  - Query 1: [Short Description]
+  - Query 1: Display all the previous flights that the customer has not rated yet.
     ```python
-    #paste the sql query from the flask app here
+    # Fetch flights that have not been rated by the user yet: Display details from flight and purchase, and check the review table for existing entries
+    query = '''
+    SELECT 
+        p.ticketID,
+        f.airline_name, 
+        f.flight_num, 
+        f.departure_airport,
+        f.arrival_airport,
+        f.departure_date, 
+        f.departure_time
+    FROM 
+        purchase p, flight f, ticket t
+    WHERE 
+        p.ticketID = t.ticketID AND
+        t.airline_name = f.airline_name AND
+        t.flight_num = f.flight_num AND
+        t.departure_date = f.departure_date AND
+        t.departure_time = f.departure_time AND
+        p.email_id = %s AND 
+        (f.arrival_date < CURRENT_DATE() OR (f.arrival_date = CURRENT_DATE() AND f.arrival_time < CURRENT_TIME())) AND
+        NOT EXISTS (
+            SELECT 1 FROM review r WHERE r.ticketID = p.ticketID
+        )
+    '''
     ```
-    *Explanation: [Explanation of the query.]*
-  - Query 1: [Short Description]
+    *Explanation: Fetch the details of the previous flights of the customer and display for the customer to rate. They cannot technically rate until the flight has arrived at the destination airport (business logic). The query compares the system time against the arrival time and displays the data accordingly.*
+
+  - Query 2: Add a customer review
     ```python
-    #paste the sql query from the flask app here
+    # Insert the data from the form into the review table
+    query = 'INSERT INTO review (ticketID, email_id, rate, comment) VALUES (%s, %s, %s, %s)'
     ```
-    *Explanation: [Explanation of the query.]*
+    *Explanation: Once the checks are done above, the rating (a number between 1 to 5) and a comment will be passed to the database's `review` table.*
 
 #### Track my Spending
 - **Description**: [Briefly describe what this use case does.]

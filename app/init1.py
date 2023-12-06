@@ -666,12 +666,13 @@ def customer_submit_rating():
     ticketID = request.form.get('ticketID')
     rate = request.form.get('rate')
     comment = request.form.get('comment')
-    customer_email = session.get('email')  # Assume user is logged in and email is in session
+    customer_email = session.get('email')
 
     cursor = conn.cursor()
+	# Insert the data from the form into the review table
     query = 'INSERT INTO review (ticketID, email_id, rate, comment) VALUES (%s, %s, %s, %s)'
     cursor.execute(query, (ticketID, customer_email, rate, comment))
-    conn.commit()  # Don't forget to commit your changes
+    conn.commit() 
     cursor.close()
 
     return redirect(url_for('customer_rate_flight'))
