@@ -175,18 +175,14 @@ The following are the use cases for when a customer's login is authenticated.
     *Explanation: This function will be called in all the customer use cases to ensure legit access and implementation of the functions.*
 
 #### Logout
-- **Description**: [Briefly describe what this use case does.]
+- **Description**: Log out the user by deleting all the session data and displaying the login page.
 - **SQL Queries**:
-  - Query 1: [Short Description]
+  - This function does not need any SQL queries.
     ```python
-    #paste the sql query from the flask app here
+    session.clear()
+    return redirect(url_for('customer_login'))
     ```
-    *Explanation: [Explanation of the query.]*
-  - Query 1: [Short Description]
-    ```python
-    #paste the sql query from the flask app here
-    ```
-    *Explanation: [Explanation of the query.]*
+    *Explanation: The session data is deleted so that there are no conflicts when a new user logs in.*
 
 #### View my Flights
 - **Description**: Fetch the upcoming flights and previous flights of the customer. Provide an option to cancel the flight if the scheduled departure is more than 24 hours (discussed in the 'Cancel Ticket' use case).
