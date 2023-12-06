@@ -516,9 +516,6 @@ The following are the use cases for when an airline staff member's login is auth
     *Explanation: [Explanation of the query.]*
 
 
-## Additional Features
-If your application has any additional features, mention them here.
-
 ## License
 
 This project is developed as a part of *CS-UY 3083: Introduction to Databases* at NYU Tandon School of Engineering and is intended for educational purposes only. While this project is not covered under any formal open-source license, any use, modification, or distribution of the project's code or documentation must be consulted with and approved by the contributors of the project. 
