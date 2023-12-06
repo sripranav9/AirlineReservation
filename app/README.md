@@ -104,8 +104,50 @@ The following are the use cases for when no user is logged in.
 ### 2. Customer
 The following are the use cases for when a customer's login is authenticated.
 
+#### Register
+- **Description**: [Briefly describe what this use case does.]
+- **SQL Queries**:
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+
+#### Login
+- **Description**: [Briefly describe what this use case does.]
+- **SQL Queries**:
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+
+#### Logout
+- **Description**: [Briefly describe what this use case does.]
+- **SQL Queries**:
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+
 #### View my Flights
-- **Description**: Fetch the upcoming flights and previous flights of the customer. Provide an option to cancel the flight if the scheduled departure is more than 24 hours (discussed in the 'Cancel flight' use case).
+- **Description**: Fetch the upcoming flights and previous flights of the customer. Provide an option to cancel the flight if the scheduled departure is more than 24 hours (discussed in the 'Cancel Ticket' use case).
 - **SQL Queries**:
   - Query 1: Fetch the upcoming flight details from `flight`, `purchase`, and `ticket` and order in descending order of departure date and time.
     ```python
@@ -155,6 +197,77 @@ The following are the use cases for when a customer's login is authenticated.
     #paste the sql query from the flask app here
     ```
     *Explanation: [Explanation of the query.]*
+
+#### Purchase Tickets
+- **Description**: [Briefly describe what this use case does.]
+- **SQL Queries**:
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+
+#### Cancel Ticket
+- **Description**: [Briefly describe what this use case does.]
+- **SQL Queries**:
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+
+#### Rate and Comment on Previous Flights
+- **Description**: [Briefly describe what this use case does.]
+- **SQL Queries**:
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+
+#### Track my Spending
+- **Description**: [Briefly describe what this use case does.]
+- **SQL Queries**:
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+
+#### View all Purchases
+- **Description**: [Briefly describe what this use case does.]
+- **SQL Queries**:
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+  - Query 1: [Short Description]
+    ```python
+    #paste the sql query from the flask app here
+    ```
+    *Explanation: [Explanation of the query.]*
+
 
 ### 3. Airline Staff
 The following are the use cases for when an airline staff member's login is authenticated.
