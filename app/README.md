@@ -1,4 +1,5 @@
 # Airline Ticket Reservation System
+### Course Project - Database Design and Web Application Development
 CS-UY 3083 Introduction to Databases <br/>
 NYU Tandon School of Enginnering <br/>
 Professor Ratan Dey <br/>
