@@ -569,34 +569,34 @@ The following are the use cases for when an airline staff member's login is auth
   - Query 1: Because the user can enter 0-5 attributes the sql query needs to be made by concatenating strings if information appears in the form.
     ```python
     search_flight_query = "SELECT * FROM flight WHERE "
-    conditions = []
-    query_conditions = []
+  conditions = []
+  query_conditions = []
 
-    if flight_num:
-      conditions.append("flight_num = %s")
-      query_conditions.append(flight_num)
-    if start_date and end_date:
-      conditions.append("departure_date BETWEEN %s AND %s")
-      query_conditions.append(start_date)
-      query_conditions.append(end_date)
-    elif start_date:
-      conditions.append("departure_date >= %s")
-      query_conditions.append(start_date)
-    elif end_date:
-      conditions.append("departure_date <= %s")
-      query_conditions.append(end_date)
-    if(departure_airport):
-      conditions.append("departure_airport = %s")
-      query_conditions.append(departure_airport)
-    if(arrival_airport):
-      conditions.append("arrival_airport = %s")
-      query_conditions.append(arrival_airport)
+  if flight_num:
+    conditions.append("flight_num = %s")
+    query_conditions.append(flight_num)
+  if start_date and end_date:
+    conditions.append("departure_date BETWEEN %s AND %s")
+    query_conditions.append(start_date)
+    query_conditions.append(end_date)
+  elif start_date:
+    conditions.append("departure_date >= %s")
+    query_conditions.append(start_date)
+  elif end_date:
+    conditions.append("departure_date <= %s")
+    query_conditions.append(end_date)
+  if(departure_airport):
+    conditions.append("departure_airport = %s")
+    query_conditions.append(departure_airport)
+  if(arrival_airport):
+    conditions.append("arrival_airport = %s")
+    query_conditions.append(arrival_airport)
 
-    conditions.append("airline_name = %s")
-    query_conditions.append(session['airline'])
+  conditions.append("airline_name = %s")
+  query_conditions.append(session['airline'])
 
-    if conditions:
-      search_flight_query += " AND ".join(conditions)
+  if conditions:
+    search_flight_query += " AND ".join(conditions)
 
     ```
 
@@ -655,12 +655,12 @@ The following are the use cases for when an airline staff member's login is auth
 
     Query 4: query to see if the airplane asked to be used is in the DDB system. Foreign Key dependency check
     ```python
-  assigned_airplane_airline_query = 'SELECT * FROM airplane where airline_name = %s and airplaneID = %s'
+    assigned_airplane_airline_query = 'SELECT * FROM airplane where airline_name = %s and airplaneID = %s'
     ```
 
     Query 5: query to get all the maintenances of a given airplane. This is then used to check if this flight can be created. If a maintenance is scheduled during proposed flight time then flight can not be created
     ```python
-  maintenance_check_query = 'SELECT * FROM maintenance where airline_name = %s and airplaneID = %s'
+    maintenance_check_query = 'SELECT * FROM maintenance where airline_name = %s and airplaneID = %s'
     ```
 
     Query 6: Queries the airplane to see how many seats are availble on the aiplane. This becomes the number available on the flight
@@ -704,7 +704,7 @@ The following are the use cases for when an airline staff member's login is auth
 - **SQL Queries**:
   - Query 1: Query to see if an aiprot with the same code already exists
     ```python
-  airport_exists_query = 'SELECT * FROM airport where code = %s'
+    airport_exists_query = 'SELECT * FROM airport where code = %s'
     ```
   - Query 2: Inserts data given by staff member into the airport table in the DDB 
     ```python
@@ -717,7 +717,7 @@ The following are the use cases for when an airline staff member's login is auth
 - **SQL Queries**:
   - Query 1: queries the database for a certain flight based on the information given by staff.
     ```python
-  flight_exists_query = 'SELECT * FROM flight where airline_name = %s and flight_num = %s and departure_time = %s and departure_date = %s'
+    flight_exists_query = 'SELECT * FROM flight where airline_name = %s and flight_num = %s and departure_time = %s and departure_date = %s'
     ```
 
 
@@ -726,11 +726,11 @@ The following are the use cases for when an airline staff member's login is auth
 - **SQL Queries**: 
   - Query 1: Subquery gets all the ticketID in the ticket table that correspond to the flight. Then in the review tables all ticketID that are in the subquery are selected.
     ```python
-  reviews_query = 'SELECT * FROM review where ticketID in (SELECT ticketID FROM ticket WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s)'
+    reviews_query = 'SELECT * FROM review where ticketID in (SELECT ticketID FROM ticket WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s)'
     ```
   - Query 2: basically the same as the query above in terms of subquery but instead of getting all the reviews just gets a single value for the average of the ratings for all the reviews
     ```python
-  review_avg_query = 'SELECT avg(rate) as avgRate FROM review where ticketID in (SELECT ticketID FROM ticket WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s)'
+    review_avg_query = 'SELECT avg(rate) as avgRate FROM review where ticketID in (SELECT ticketID FROM ticket WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s)'
     ```
 
 
@@ -739,7 +739,7 @@ The following are the use cases for when an airline staff member's login is auth
 - **SQL Queries**:
   - Query 1: Queries to find the flight so it can be passed to the printFlight Ratings
     ```python
-  flight_query = 'SELECT * FROM flight WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s'
+    flight_query = 'SELECT * FROM flight WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s'
     ```
 
 
@@ -753,7 +753,7 @@ The following are the use cases for when an airline staff member's login is auth
     ```
   - Query 2: queries DDB to find all the flights using the given airplane
     ```python
-  flight_check_query = 'SELECT * from flight where assigned_airplaneID = %s and assigned_airplane_airline = %s'
+    flight_check_query = 'SELECT * from flight where assigned_airplaneID = %s and assigned_airplane_airline = %s'
     ```
   - Query 3: Inserts all the information for a maintenance if one is allowed
     ```python
@@ -766,7 +766,7 @@ The following are the use cases for when an airline staff member's login is auth
 - **SQL Queries**: 
   - Query 1: Gets all the information of the customers on the staff airline and retrieves the number of tickets they have bought 
     ```python
-  most_frequent_query = 'SELECT email_id, first_name, last_name, date_of_birth, count(*) as frequency from purchase natural join customer natural join ticket where airline_name = %s group by email_id order by frequency desc'
+    most_frequent_query = 'SELECT email_id, first_name, last_name, date_of_birth, count(*) as frequency from purchase natural join customer natural join ticket where airline_name = %s group by email_id order by frequency desc'
     ```
 
 
@@ -780,7 +780,7 @@ The following are the use cases for when an airline staff member's login is auth
     ```
   - Query 2: This gets all the information about the flights the customer in question has taken on staff airline. Because of the joining of three tables * could not be used and thus all attributes wanted needed to be listed out
     ```python
-  flights_query = 'SELECT airline_name, departure_airport, arrival_airport, assigned_airplane_airline, assigned_airplaneID, flight_num, departure_date, departure_time, arrival_date, arrival_time, base_price_ticket, flight_status, total_seats, available_seats from (customer, purchase) natural join ticket natural join flight where customer.email_id = purchase.email_id and customer.email_id = %s and airline_name = %s'
+    flights_query = 'SELECT airline_name, departure_airport, arrival_airport, assigned_airplane_airline, assigned_airplaneID, flight_num, departure_date, departure_time, arrival_date, arrival_time, base_price_ticket, flight_status, total_seats, available_seats from (customer, purchase) natural join ticket natural join flight where customer.email_id = purchase.email_id and customer.email_id = %s and airline_name = %s'
     ```
 
 
@@ -789,11 +789,11 @@ The following are the use cases for when an airline staff member's login is auth
 - **SQL Queries**: 
   - Query 1: Gets the sum of all the amount_paid by customers from the purchase table. This is designed to show all the money in the past month based on the purchase date not the flight time
     ```python
-  monthly_query = 'SELECT sum(amount_paid) as month_amt from purchase natural join ticket where airline_name = %s and purchase_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)'
+    monthly_query = 'SELECT sum(amount_paid) as month_amt from purchase natural join ticket where airline_name = %s and purchase_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)'
     ```
   - Query 2: Gets the sum of all the amount_paid by customers in form the purchase table over the last year. Purchase date is in quesiton not the departure time of flights
     ```python
-  yearly_query = 'SELECT sum(amount_paid) as year_amt from purchase natural join ticket where airline_name = %s and purchase_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)'
+    yearly_query = 'SELECT sum(amount_paid) as year_amt from purchase natural join ticket where airline_name = %s and purchase_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)'
     ```
 
 
