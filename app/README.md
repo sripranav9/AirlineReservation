@@ -543,8 +543,8 @@ The following are the use cases for when an airline staff member's login is auth
 
 #### iii. isNotValidStaff()
 - **Description**: Is used to verify that a the person doing an action on the front end actually is a Staff member and therefore has the right to access certain information/links
-- **SQL Queries**: Need to make sure that the session user matches a valid staff member in the DDB
-  - Query 1: [Short Description]
+- **SQL Queries**: 
+  - Query 1: Need to make sure that the session user matches a valid staff member in the DDB
     ```python
    query = 'SELECT * FROM airline_staff WHERE username = %s and pwd = %s'
     ```
