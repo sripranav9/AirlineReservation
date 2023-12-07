@@ -25,7 +25,17 @@ Key features include:
 
 <a href="https://github.com/sripranav9/AirlineReservation/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=sripranav9/AirlineReservation" />
-</a>
+</a> <br><br>
+
+**Contribution Summary:** 
+ - Sri Pranav Srivatsavai:
+   - Responsible for handling all the customer side interactions (Flask and HTML)
+   - Responsible for handling the search flights functionality on the public side interactions (Flask and HTML)
+   - All the use cases executed can be found in the Use cases section ([Public](#1-public-no-users-logged-in) and [Customer](#2-customer))
+ - Theo Welckle:
+   - Responsible for handling all the airline staff side interactions (Flask and HTML)
+   - Responsible for handling the flight status functionality on the public side interactions (Flask and HTML)
+   - All the use cases executed can be found in the Use cases section ([Public](#1-public-no-users-logged-in) and [Airline Staff](#3-airline-staff))
 
 
 ## Setup and Installation
