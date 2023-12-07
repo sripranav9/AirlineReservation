@@ -569,34 +569,34 @@ The following are the use cases for when an airline staff member's login is auth
   - Query 1: Because the user can enter 0-5 attributes the sql query needs to be made by concatenating strings if information appears in the form.
     ```python
     search_flight_query = "SELECT * FROM flight WHERE "
-  conditions = []
-  query_conditions = []
+    conditions = []
+    query_conditions = []
 
-  if flight_num:
-    conditions.append("flight_num = %s")
-    query_conditions.append(flight_num)
-  if start_date and end_date:
-    conditions.append("departure_date BETWEEN %s AND %s")
-    query_conditions.append(start_date)
-    query_conditions.append(end_date)
-  elif start_date:
-    conditions.append("departure_date >= %s")
-    query_conditions.append(start_date)
-  elif end_date:
-    conditions.append("departure_date <= %s")
-    query_conditions.append(end_date)
-  if(departure_airport):
-    conditions.append("departure_airport = %s")
-    query_conditions.append(departure_airport)
-  if(arrival_airport):
-    conditions.append("arrival_airport = %s")
-    query_conditions.append(arrival_airport)
+    if flight_num:
+      conditions.append("flight_num = %s")
+      query_conditions.append(flight_num)
+    if start_date and end_date:
+      conditions.append("departure_date BETWEEN %s AND %s")
+      query_conditions.append(start_date)
+      query_conditions.append(end_date)
+    elif start_date:
+      conditions.append("departure_date >= %s")
+      query_conditions.append(start_date)
+    elif end_date:
+      conditions.append("departure_date <= %s")
+      query_conditions.append(end_date)
+    if(departure_airport):
+      conditions.append("departure_airport = %s")
+      query_conditions.append(departure_airport)
+    if(arrival_airport):
+      conditions.append("arrival_airport = %s")
+      query_conditions.append(arrival_airport)
 
-  conditions.append("airline_name = %s")
-  query_conditions.append(session['airline'])
+    conditions.append("airline_name = %s")
+    query_conditions.append(session['airline'])
 
-  if conditions:
-    search_flight_query += " AND ".join(conditions)
+    if conditions:
+      search_flight_query += " AND ".join(conditions)
 
     ```
 
