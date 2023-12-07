@@ -76,6 +76,8 @@ Key features include:
 ## Use Cases
 Here, list all the use cases of your application. For each use case, provide a brief description.
 
+
+
 ### 1. Public (No Users Logged In)
 The following are the use cases for when no user is logged in.
 #### i. View Public Information
@@ -100,8 +102,19 @@ The following are the use cases for when no user is logged in.
     #paste the sql query from the flask app here
     ```
 
-#### ii. Login and Register
+#### ii. checkFlightStatus()
+- **Description**: Function is used for anybody to check the status of a flight based on certain criteria they must fill out in a form
+- **SQL Queries**:
+  - Query 1: Queries the database to retrieve the flight the general user wants to check the status of
+    ```python
+    flight_query = 'SELECT * FROM flight where airline_name = %s and flight_num = %s and departure_date = %s and arrival_date = %s'
+    ```
+
+
+#### iii. Login and Register
 - **Description and SQL Queries**: The login and register modules for [customers](#2-customer) and [airline staff](#3-airline-staff) will be explained in the respective use case groups.
+
+
 
 ### 2. Customer
 The following are the use cases for when a customer's login is authenticated.
@@ -487,33 +500,304 @@ The following are the use cases for when a customer's login is authenticated.
 
 ### 3. Airline Staff
 The following are the use cases for when an airline staff member's login is authenticated.
-#### i. [Use Case Heading]
-- **Description**: [Briefly describe what this use case does.]
+#### i. registerStaff
+- **Description**: This is used to register a new staff into the databse
 - **SQL Queries**:
+  - Query 1: this is used to make sure that this username does not already exist. Primary key check
+    ```python
+    query = 'SELECT * FROM airline_staff WHERE username = %s'
+    ```
+  - Query 2: Is used to make sure that the airline exists in the database. Foreign key dependency check
+    ```python
+    airline_query = 'SELECT * FROM airline where airline_name = %s'
+    ```
+
+  - Query 3: This is the insert query to add staff into the database
+    ```python
+    insert_staff_query = 'INSERT INTO airline_staff VALUES(%s, %s, %s, %s, %s, %s)'
+    ```
+
+  - Query 4: first query is used to insert phone number given by user into the database. The second query is used to make sure that phone number is not already in the database with that given user (ie a duplicate check)
+    ```python
+    insert_phone_query = 'INSERT INTO staff_phone VALUES(%s, %s)'
+    phone_already_query = 'SELECT * from staff_phone where username = %s and phone_num = %s'
+    ```
+
+  - Query 5: first query is used to insert emails given by user into the database. The second query is used to make sure that email is not already in the database with that given user (ie a duplicate check)
+    ```python
+    insert_email_query = 'INSERT INTO staff_email VALUES(%s, %s)'
+    email_already_query = 'SELECT * from staff_email where username = %s and email_id = %s'
+    ```    
+
+
+#### ii. loginStaff()
+- **Description**: Need to make sure that the information given by the user matches a valid staff member in the DDB
+- **SQL Queries**:
+  - Query 1: Is a query to the DDB to check if the information given corresponds with a staff member in the DDB
+    ``` python 
+      query = 'SELECT * FROM airline_staff WHERE username = %s and pwd = %s'
+
+    ```
+
+
+
+#### iii. isNotValidStaff()
+- **Description**: Is used to verify that a the person doing an action on the front end actually is a Staff member and therefore has the right to access certain information/links
+- **SQL Queries**: Need to make sure that the session user matches a valid staff member in the DDB
   - Query 1: [Short Description]
     ```python
-    #paste the sql query from the flask app here
+   query = 'SELECT * FROM airline_staff WHERE username = %s and pwd = %s'
     ```
-    *Explanation: [Explanation of the query.]*
-  - Query 2: [Short Description]
-    ```python
-    #paste the sql query from the flask app here
-    ```
-    *Explanation: [Explanation of the query.]*
+    
 
-#### ii. [Use Case Heading]
-- **Description**: [Briefly describe what this use case does.]
+
+
+#### iv. view_flight()
+- **Description**: needs to give all the flights by the airline in the enxt 30 days
 - **SQL Queries**:
-  - Query 2: [Short Description]
+  - Query 1: selects from the flight table all flights that are between current date and 30 days out. 
     ```python
-    #paste the sql query from the flask app here
+    thirty_day_query = 'SELECT * FROM flight WHERE airline_name = %s and CURRENT_DATE <= departure_date and departure_date <= DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY) ORDER BY departure_date DESC'
     ```
-    *Explanation: [Explanation of the query.]*
-  - Query 2: [Short Description]
+
+
+
+#### v. viewFlights()
+- **Description**: needs to take in the information given by the user and create an SQL query that will return the list of flights based on the constraints given by the front end user.
+- **SQL Queries**:
+  - Query 1: Because the user can enter 0-5 attributes the sql query needs to be made by concatenating strings if information appears in the form.
     ```python
-    #paste the sql query from the flask app here
+    search_flight_query = "SELECT * FROM flight WHERE "
+  conditions = []
+  query_conditions = []
+
+  if flight_num:
+    conditions.append("flight_num = %s")
+    query_conditions.append(flight_num)
+  if start_date and end_date:
+    conditions.append("departure_date BETWEEN %s AND %s")
+    query_conditions.append(start_date)
+    query_conditions.append(end_date)
+  elif start_date:
+    conditions.append("departure_date >= %s")
+    query_conditions.append(start_date)
+  elif end_date:
+    conditions.append("departure_date <= %s")
+    query_conditions.append(end_date)
+  if(departure_airport):
+    conditions.append("departure_airport = %s")
+    query_conditions.append(departure_airport)
+  if(arrival_airport):
+    conditions.append("arrival_airport = %s")
+    query_conditions.append(arrival_airport)
+
+  conditions.append("airline_name = %s")
+  query_conditions.append(session['airline'])
+
+  if conditions:
+    search_flight_query += " AND ".join(conditions)
+
     ```
-    *Explanation: [Explanation of the query.]*
+
+
+#### vi. change_status()
+- **Description**: Staff member should be able to change the status of a given flight if they wish. This function obtains the flight that the user wants to change. this flight is sent to the changeStatus() function.
+- **SQL Queries**:
+  - Query 1: Selects the flight specified by the user in the front end
+    ```python
+    flight_query = 'SELECT * FROM flight WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s'
+    ```
+    
+
+#### vii. changeStatus()
+- **Description**: changes the status of a given flight based on the information given by staff in the front end
+- **SQL Queries**:
+  - Query 1: first query updates the status of the flight specified by the user. The second query retrieves the flight from the data base with the updated flight status to show to the user 
+    ```python
+    flight_change_query = 'UPDATE flight set flight_status = %s where airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s'
+
+    flight_query = 'SELECT * FROM flight WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s'
+
+    ```
+
+
+
+#### viii. see_customers()
+- **Description**: This function is used to see the customers that are on a given flight. Flight information is passed to the function using a form
+- **SQL Queries**:
+  - Query 1: This query is used to obtain the information of the flight in question.
+    ```python
+    flight_query = 'SELECT * FROM flight WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s'
+    ```
+  - Query 2: This query is used to obtain the information for all the customers on that given flight
+    ```python
+    customer_query = 'SELECT * FROM purchase where ticketID in (SELECT ticketID from ticket where airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s)'
+    ```
+
+#### ix. createNewFlight()
+- **Description**: This function is used to create a new flight in the DDB. The problem is there are many foreign key dependencies that need to be checked before this can occur
+- **SQL Queries**:
+  - Query 1: This query is used to see if a flight like this already exists 
+    ```python
+      flight_exists_query = 'SELECT * FROM flight where airline_name = %s and flight_num = %s and departure_time = %s and departure_date = %s'
+
+    ```
+  - Query 2: query to see if the arrival airport exists in the DDB. Foreign Key dependency check
+    ```python
+    arrival_aiport_query = 'SELECT * FROM airport where code = %s'
+    ```
+
+    Query 3: query to see if the departure airport exists in DDB. Foreign Key dependency check
+    ```python
+    departure_aiport_query = 'SELECT * FROM airport where code = %s'
+    ```
+
+    Query 4: query to see if the airplane asked to be used is in the DDB system. Foreign Key dependency check
+    ```python
+  assigned_airplane_airline_query = 'SELECT * FROM airplane where airline_name = %s and airplaneID = %s'
+    ```
+
+    Query 5: query to get all the maintenances of a given airplane. This is then used to check if this flight can be created. If a maintenance is scheduled during proposed flight time then flight can not be created
+    ```python
+  maintenance_check_query = 'SELECT * FROM maintenance where airline_name = %s and airplaneID = %s'
+    ```
+
+    Query 6: Queries the airplane to see how many seats are availble on the aiplane. This becomes the number available on the flight
+    ```python
+    total_seats_query = 'SELECT num_of_seats from airplane where airline_name = %s and airplaneID = %s'
+    ```
+
+    Query 7: Inserts all the information into the flight table in the DDB
+    ```python
+    insert_flight_query = 'INSERT INTO flight VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+    ```
+
+     Query 8: queries the flight table for all flights that have departure dates in the next 30 days. They are returned in order by departure date
+    ```python
+    thirty_day_query = 'SELECT * FROM flight WHERE airline_name = %s and CURRENT_DATE <= departure_date and departure_date <= DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY) ORDER BY departure_date DESC'
+    ```
+
+
+#### x. createNewAirplane()
+- **Description**: This function is used to create a new airplane in the DDB. There is a duplicate check that needs to occur
+- **SQL Queries**:
+  - Query 1: Queries the database for the airplane given the currect informaiton. If airplane already exists then can not create a duplicate
+    ```python
+      airplane_exists_query = 'SELECT * from airplane where airplaneID = %s and airline_name = %s'
+
+    ```
+ 
+
+#### xi. view_airplanes()
+- **Description**: Is a function that is meant to get all the airplanes owned by the staff's airline.
+- **SQL Queries**:
+  - Query 1: gets all airplanes where airline_name is that of staff airline company
+    ```python
+      airplanes_query = 'SELECT * FROM airplane where airline_name = %s'
+
+    ```
+
+
+#### xii. createNewAirport()
+- **Description**: Creates a new airport. But first must check if that airport already exists in the DDB
+- **SQL Queries**:
+  - Query 1: Query to see if an aiprot with the same code already exists
+    ```python
+  airport_exists_query = 'SELECT * FROM airport where code = %s'
+    ```
+  - Query 2: Inserts data given by staff member into the airport table in the DDB 
+    ```python
+    new_airport_insert = 'INSERT INTO airport VALUES (%s, %s, %s, %s, %s, %s)'
+    ```
+
+
+#### xiii. searchFlightRatings()
+- **Description**: Used to see if a flight the staff member is searching for exists. If it does find that flight and send it to the printFlightRatings() functions
+- **SQL Queries**:
+  - Query 1: queries the database for a certain flight based on the information given by staff.
+    ```python
+  flight_exists_query = 'SELECT * FROM flight where airline_name = %s and flight_num = %s and departure_time = %s and departure_date = %s'
+    ```
+
+
+#### xiv. printFlightRatings(flight)
+- **Description**: This takes in a flight as a parameter and then queries the review table to retrieve all the reviews with that flight
+- **SQL Queries**: 
+  - Query 1: Subquery gets all the ticketID in the ticket table that correspond to the flight. Then in the review tables all ticketID that are in the subquery are selected.
+    ```python
+  reviews_query = 'SELECT * FROM review where ticketID in (SELECT ticketID FROM ticket WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s)'
+    ```
+  - Query 2: basically the same as the query above in terms of subquery but instead of getting all the reviews just gets a single value for the average of the ratings for all the reviews
+    ```python
+  review_avg_query = 'SELECT avg(rate) as avgRate FROM review where ticketID in (SELECT ticketID FROM ticket WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s)'
+    ```
+
+
+#### xv. view_reviews()
+- **Description**: This function is called when a staff member clicks on the reviews link of a flight (in the search function). The parameters are passed through the URL and the flight is found and then passed to the printFlightRatings
+- **SQL Queries**:
+  - Query 1: Queries to find the flight so it can be passed to the printFlight Ratings
+    ```python
+  flight_query = 'SELECT * FROM flight WHERE airline_name = %s and flight_num = %s and departure_date = %s and departure_time = %s'
+    ```
+
+
+#### xvi. scheduleMaintenance()
+- **Description**: Is used to schedule a maintenance for a flight. Need to check if airplane exists and whether the airplane is already scheduled for flight during the proposed maintenance time
+- **SQL Queries**:
+  - Query 1: quries DDB to retrieve airplane which the staff is trying to schedule maintenace
+    ```python
+      airplane_query = 'SELECT * FROM airplane WHERE airline_name = %s and airplaneID = %s'
+
+    ```
+  - Query 2: queries DDB to find all the flights using the given airplane
+    ```python
+  flight_check_query = 'SELECT * from flight where assigned_airplaneID = %s and assigned_airplane_airline = %s'
+    ```
+  - Query 3: Inserts all the information for a maintenance if one is allowed
+    ```python
+    maintenance_insert_query = 'INSERT INTO maintenance VALUES (%s, %s, %s, %s, %s, %s)'
+    ```
+
+
+#### xvii. view_frequent_customers()
+- **Description**: function is called to view the customers who most frequently use the airline (most flights taken/booked)
+- **SQL Queries**: 
+  - Query 1: Gets all the information of the customers on the staff airline and retrieves the number of tickets they have bought 
+    ```python
+  most_frequent_query = 'SELECT email_id, first_name, last_name, date_of_birth, count(*) as frequency from purchase natural join customer natural join ticket where airline_name = %s group by email_id order by frequency desc'
+    ```
+
+
+
+#### xviii. view_customer_flights()
+- **Description**: This function is called when the staff clicks on a customer in the view_frequent_customers() page. It allows them to see all of the flight they have taken and have booked
+- **SQL Queries**:
+  - Query 1: This query is used to retrieve the customer in question. Needed as the information is passed through URL
+    ```python
+    customer_query = 'SELECT * from customer where email_id = %s'
+    ```
+  - Query 2: This gets all the information about the flights the customer in question has taken on staff airline. Because of the joining of three tables * could not be used and thus all attributes wanted needed to be listed out
+    ```python
+  flights_query = 'SELECT airline_name, departure_airport, arrival_airport, assigned_airplane_airline, assigned_airplaneID, flight_num, departure_date, departure_time, arrival_date, arrival_time, base_price_ticket, flight_status, total_seats, available_seats from (customer, purchase) natural join ticket natural join flight where customer.email_id = purchase.email_id and customer.email_id = %s and airline_name = %s'
+    ```
+
+
+#### xix. view_earned_revenue()
+- **Description**: Function is used to get all the revenue of the airline in the past month and the past year
+- **SQL Queries**: 
+  - Query 1: Gets the sum of all the amount_paid by customers from the purchase table. This is designed to show all the money in the past month based on the purchase date not the flight time
+    ```python
+  monthly_query = 'SELECT sum(amount_paid) as month_amt from purchase natural join ticket where airline_name = %s and purchase_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)'
+    ```
+  - Query 2: Gets the sum of all the amount_paid by customers in form the purchase table over the last year. Purchase date is in quesiton not the departure time of flights
+    ```python
+  yearly_query = 'SELECT sum(amount_paid) as year_amt from purchase natural join ticket where airline_name = %s and purchase_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)'
+    ```
+
+
+
+
 
 
 ## License

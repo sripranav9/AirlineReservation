@@ -1117,7 +1117,7 @@ def createNewFlight():
 	arrival_date = request.form['arrival_date']
 	arrival_time = request.form['arrival_time']
 	maintenance_check_query = 'SELECT * FROM maintenance where airline_name = %s and airplaneID = %s'
-	cursor.execute(maintenance_check_query, (session['airline'], airplane_ID))
+	cursor.execute(maintenance_check_query, (assigned_airplane_airline, airplane_ID))
 	flight_maintenances = cursor.fetchall()
 
 	arrival_date_NonStr = datetime.strptime(arrival_date, "%Y-%m-%d").date()
