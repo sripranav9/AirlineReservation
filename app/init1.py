@@ -13,7 +13,7 @@ app = Flask(__name__)
 conn = pymysql.connect(host='localhost',
                        user='root',
                        password='',
-                       db='airline_reservation',
+                       db='airline_reservation', 
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
@@ -377,14 +377,14 @@ def purchase_confirmation():
     outbound_cost = session.get('outbound_cost')
     inbound_cost = session.get('inbound_cost')
 
-    print(selected_inbound, selected_outbound)
+    # print(selected_inbound, selected_outbound)
     # total_cost = session.pop('total_cost', None)
 
     # Check whether the ticket is for the customer logged in or someone else
     buying_for_others = request.form.get('buying_for_others') == 'yes'
-    print(buying_for_others)
+    # print(buying_for_others)
     if buying_for_others:
-        print("buying for others activated")
+        # print("buying for others activated")
         # Get the passenger details from the form
         passenger_fname = request.form.get('passenger_fname')
         passenger_lname = request.form.get('passenger_lname')
@@ -1423,7 +1423,6 @@ def view_cusomter_flights():
 	cursor.execute(flights_query, (user_email_id, session['airline']))
 	flights = cursor.fetchall();
 	cursor.close()
-	print(flights)
 	for flight in flights:
 		current_date = datetime.now().date()
 		current_time = datetime.now().time()
@@ -1470,12 +1469,11 @@ def checkFlightStatus():
     departure_date = request.form['departure']
     arrival_date = request.form['arrival']
 
-    print(airline, flight_num, departure_date, arrival_date)
+
     flight_query = 'SELECT * FROM flight where airline_name = %s and flight_num = %s and departure_date = %s and arrival_date = %s'
     cursor.execute(flight_query, (airline, flight_num, departure_date, arrival_date))
     flightExists = cursor.fetchall()
     cursor.close()
-    print(flightExists)
     if(not flightExists):
         error = "Sorry this flight does not exist"
         return render_template('check_flight_status.html', error = error)
