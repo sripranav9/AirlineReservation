@@ -148,7 +148,7 @@ def registerAuth():
             # Redirect to login page after registration
             return redirect(url_for('customer_login'))
         except Exception as e:
-            # print(e)
+            print(e)
             # Handle errors and rollback transaction
             conn.rollback()
             cursor.close()
@@ -505,8 +505,8 @@ def purchase_confirmation():
         conn.commit()
 
     except Exception as e:
-         # print('Could not proceed with purchase transaction. Aborting.')
-         # print(e)
+         print('Could not proceed with purchase transaction. Aborting.')
+         print(e)
          conn.rollback()
          error = "Could not complete the transaction. Aborted."
          return render_template('customer-purchase.html', error=error)
